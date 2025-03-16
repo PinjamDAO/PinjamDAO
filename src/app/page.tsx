@@ -1,11 +1,11 @@
 'use client'
 
 import Image from "next/image";
-
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react";
 import { animate } from "motion";
 import Header from "@/components/Header";
+import WorldIDLogin from "@/components/WorldIDLogin";
 
 function Slogan() {
   
@@ -45,20 +45,6 @@ function Slogan() {
         </motion.div>
       </AnimatePresence>
     </div>
-  )
-}
-
-function WorldIDLogin() {
-  return (
-    <motion.div className="flex flex-row justify-evenly w-64 h-12 bg-white text-black font-bold text-base rounded-lg"
-    whileHover={{
-      scale: 1.1,
-      transition: { duration: 0.2 },
-    }}
-    whileTap={{ scale: 0.9 }}>
-      <div className="flex items-center">Continue With WorldID</div>
-      <Image src={'/worldID.svg'} alt="worldID" width={25} height={25}/>
-    </motion.div>
   )
 }
 
