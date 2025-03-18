@@ -1,6 +1,7 @@
-'use client'
+"use client";
 
-import { IDKitWidget, VerificationLevel } from '@worldcoin/idkit';
+import { VerificationLevel, IDKitWidget } from "@worldcoin/idkit";
+import type { ISuccessResult } from "@worldcoin/idkit";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -10,17 +11,27 @@ export default function WorldIDLogin() {
     const [verified, setVerified] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // This function handles the verification with your API endpoint
-    const verifyProof = async (proof: any) => {
+    // App ID and action from environment variables (with fallbacks for development)
+    const app_id = process.env.NEXT_PUBLIC_WORLD_ID_APP_ID || "app_staging_338b219233c319fb6dd354f3919be66e";
+    const action = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID || "vhack_action";
+
+    const onSuccess = (result: ISuccessResult) => {
+        console.log("WorldID verification successful!", result);
+        setVerified(true);
+        setLoading(false);
+    };
+
+    const handleProof = async (result: ISuccessResult) => {
         try {
-            console.log('Verifying proof:', proof);
+            setLoading(true);
+            console.log("Proof received from IDKit:", result);
             
             const response = await fetch('/api/verify-worldid', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(proof),
+                body: JSON.stringify(result),
             });
 
             if (!response.ok) {
@@ -29,18 +40,19 @@ export default function WorldIDLogin() {
             }
 
             const data = await response.json();
-            return data.success; // Return true if verification was successful
+            console.log("Response from backend:", data);
+            
+            if (!data.success) {
+                throw new Error(data.detail || "Verification failed");
+            }
+            
+            return true; // Return true to indicate successful verification
         } catch (error) {
             console.error("Verification error:", error);
+            setError(error instanceof Error ? error.message : "Unknown error occurred");
+            setLoading(false);
             throw error; // Rethrow to be caught by the widget
         }
-    };
-
-    // This function is called after successful verification
-    const onSuccess = () => {
-        console.log("WorldID verification successful!");
-        setVerified(true);
-        setLoading(false);
     };
 
     if (verified) {
@@ -54,17 +66,11 @@ export default function WorldIDLogin() {
     return (
         <div className="flex flex-col items-center gap-4">
             <IDKitWidget
-                app_id="app_staging_338b219233c319fb6dd354f3919be66e"
-                action="vhack_action"
-                verification_level={VerificationLevel.Device}
-                handleVerify={verifyProof}
+                app_id={app_id as `app_${string}`}
+                action={action}
                 onSuccess={onSuccess}
-                // Setup for when the widget is loading or processing
-                onError={(error) => {
-                    console.error("Error during verification:", error);
-                    setError(error.message || "Verification failed");
-                    setLoading(false);
-                }}
+                handleVerify={handleProof}
+                verification_level={VerificationLevel.Device}
             >
                 {({ open }) => (
                     <motion.div 

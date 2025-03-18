@@ -1,45 +1,54 @@
 import { NextResponse } from "next/server";
-import { verifyCloudProof } from "@worldcoin/idkit";
+import { verifyCloudProof } from "@worldcoin/idkit-core/backend";
+import { VerificationLevel } from "@worldcoin/idkit-core";
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-
-        const APP_ID = process.env.NEXT_PUBLIC_WORLD_ID_APP_ID!;
-        const ACTION_ID = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID!;
-
+        const proof = await request.json();
+        console.log("Received proof in API route:", proof);
+        
+        // Get environment variables with fallbacks
+        const app_id = process.env.NEXT_PUBLIC_WORLD_ID_APP_ID || "app_staging_338b219233c319fb6dd354f3919be66e";
+        const action = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID || "vhack_action";
+        
         try {
-            const verification = await verifyCloudProof(
-                body,
-                APP_ID as `app_${string}`,
-                ACTION_ID
+            const verifyRes = await verifyCloudProof(
+                proof,
+                app_id as `app_${string}`,
+                action
             );
-
-            if (verification.success) {
-                console.log('WorldID verified in route.ts!');
-                // Here you would:
-                // 1. Generate a session for the verified user
-                // 2. Store their nullifier_hash (unique identifier) in your database
-                // 3. Associate their verification with your application's database system
-
+            
+            console.log("Verification result:", verifyRes);
+            
+            if (verifyRes.success) {
                 return NextResponse.json({
                     success: true,
-                    message:"User verified successfully!"
+                    message: "User verified successfully!",
+                    nullifier: verifyRes.nullifier_hash
                 });
             } else {
-                throw new Error("Verified failed!")
-            } 
+                return NextResponse.json({
+                    success: false,
+                    code: verifyRes.code,
+                    attribute: verifyRes.attribute,
+                    detail: verifyRes.detail || "Verification failed"
+                }, { status: 400 });
+            }
         } catch (error) {
-            console.error("Failed to verified WorldID:", error);
+            console.error("Failed to verify WorldID:", error);
             return NextResponse.json(
-                { error: "Failed to verify identity. Please try again."},
-                { status: 400}
+                { 
+                    success: false,
+                    error: "Failed to verify identity",
+                    detail: error instanceof Error ? error.message : "Unknown error"
+                },
+                { status: 400 }
             );
         }
     } catch (error) {
-        console.error("Here got error in route.ts", error);
+        console.error("Error in route.ts:", error);
         return NextResponse.json(
-            { error: "Internal server error!" },
+            { error: "Internal server error" },
             { status: 500 }
         );
     }
