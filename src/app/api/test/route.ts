@@ -1,4 +1,4 @@
-import Test from "@/modals/test";
+import Test from "@/models/test";
 import connectDB from "@/services/db";
 import { NextResponse } from "next/server";
 

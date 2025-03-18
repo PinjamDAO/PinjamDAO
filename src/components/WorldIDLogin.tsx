@@ -5,6 +5,7 @@ import type { ISuccessResult } from "@worldcoin/idkit";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { redirect } from "next/navigation";
 
 export default function WorldIDLogin() {
     const [loading, setLoading] = useState(false);
@@ -15,10 +16,32 @@ export default function WorldIDLogin() {
     const app_id = process.env.NEXT_PUBLIC_WORLD_ID_APP_ID || "app_staging_338b219233c319fb6dd354f3919be66e";
     const action = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID || "vhack_action";
 
-    const onSuccess = (result: ISuccessResult) => {
+    const onSuccess = async (result: ISuccessResult) => {
         console.log("WorldID verification successful!", result);
-        setVerified(true);
-        setLoading(false);
+
+        // this shit should redirect
+        // amitofo idk what am i doing
+        const response = await fetch('/api/session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(result)            
+        })
+
+        if (!response.ok) {
+            if (response.status === 404)
+                redirect('/sign-up')
+            else {
+                const errorData = await response.json();
+                throw new Error(errorData.error)
+            }
+        } else {
+            redirect('/dashboard')
+        }
+
+        // setVerified(true);
+        // setLoading(false);
     };
 
     const handleProof = async (result: ISuccessResult) => {
