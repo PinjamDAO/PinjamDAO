@@ -68,8 +68,6 @@ export default function WorldIDLogin() {
             if (!data.success) {
                 throw new Error(data.detail || "Verification failed");
             }
-            
-            return true; // Return true to indicate successful verification
         } catch (error) {
             console.error("Verification error:", error);
             setError(error instanceof Error ? error.message : "Unknown error occurred");
