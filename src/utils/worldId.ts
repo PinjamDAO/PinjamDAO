@@ -1,17 +1,10 @@
 import { ISuccessResult } from "@worldcoin/idkit";
-// import { Connection, PublicKey, Transaction } from '@solana/web3.js'; //tbc to use Solana or ETH network, sol faster than eth.
-// import { useWallet } from '@solana/wallet-adapter-react'; // tbc
 
-const WORLD_ID_APP_ID = "get_from_world_id";
-const WORLD_ID_ACTION_ID = "action id from worldid";
-const WORLD_ID_SIGNAL = "user-auth";
-
-//solana
-export const SOLANA_NETWORK = "devnet" //mainnet-beta for real case
+const WORLD_ID_APP_ID = process.env.NEXT_PUBLIC_WORLD_ID_APP_ID || 'app_staging_338b219233c319fb6dd354f3919be66e';
+const WORLD_ID_ACTION_ID = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID || 'vhack_action';
+const WORLD_ID_SIGNAL = process.env.NEXT_PUBLIC_WORLD_ID_SIGNAL || 'user-auth';
 
 export function useWorldID() {
-    // const { publicKey, signTransaction } = useWallet();
-
     const onSuccess = async (result: ISuccessResult) => {
         try {
             console.log("Verified WorldID successfully!", result);
