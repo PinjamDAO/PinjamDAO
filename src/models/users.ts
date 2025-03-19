@@ -5,6 +5,8 @@ export type userType = {
     username: String,
     worldId: String,
     creditScore: Number,
+    walletID: Number,
+    walletAddress: Number,
 }
 
 const userSchema = new mongoose.Schema({
@@ -14,6 +16,8 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    walletID: String,
+    walletAddress: String,
 })
 
 export default mongoose.models.User || mongoose.model('User', userSchema)
