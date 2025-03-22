@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { animate } from "motion";
 import Header from "@/components/Header";
 import WorldIDLogin from "@/components/WorldIDLogin";
+import { useRouter } from "next/navigation";
+import { ISuccessResult } from "@worldcoin/idkit-core";
 
 function Slogan() {
   
@@ -49,9 +51,34 @@ function Slogan() {
 }
 
 function Login() {
+
+  const router = useRouter()
+
+  const onLoginSuccess = async (result: ISuccessResult) => {
+
+    const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(result)
+    })
+
+    if (!response.ok) {
+        if (response.status === 404)
+            router.push('/sign-up')
+        else {
+            const errorData = await response.json();
+            throw new Error(errorData.error)
+        }
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
   return (
     <div className="flex h-32 w-[20rem] bg-[#6E61E3]/40 rounded-xl shadow-lg items-center justify-center">
-      <WorldIDLogin />
+      <WorldIDLogin onSuccess={onLoginSuccess}/>
     </div>
   )
 }
