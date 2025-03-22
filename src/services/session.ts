@@ -23,7 +23,7 @@ export async function LogInSession(userID: String | undefined) {
 
 export async function LogOutSession() {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-    await session.destroy()
+    session.destroy()
 }
 
 export async function setCurrentUser(userID: String) {

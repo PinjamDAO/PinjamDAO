@@ -9,7 +9,7 @@ export async function GET(request: Request) {
         // return NextResponse.redirect(new URL('/', request.url))
         return NextResponse.json({
             'msg': 'not log in'
-        })
+        }, { status: 401 })
     }
 
     return NextResponse.json(user)

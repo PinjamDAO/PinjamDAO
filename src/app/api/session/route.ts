@@ -6,7 +6,7 @@ import { WorldIDResponse } from "@/types/type";
 import { LogInSession, setCurrentUser } from "@/services/session";
 
 // destroy session aka log out
-export async function DESTROY(request: Request) {
+export async function DELETE(request: Request) {
     await LogOutSession()
     return NextResponse.json({ 'msg': 'sign out' })
 }
