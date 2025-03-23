@@ -60,3 +60,14 @@ export type Loan = {
   repaymentSchedule: RepaymentSchedule
   createdAt: Date
 }
+
+export type LoanDetails = {
+    loanAmount: number,
+    collateralAmount: number,
+    startTime: number,
+    endTime: number,
+    active: boolean,
+    liquidated: boolean,
+    interest: number,
+    totalDue: number
+}

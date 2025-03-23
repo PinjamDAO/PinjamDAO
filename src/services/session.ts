@@ -19,6 +19,7 @@ export async function LogInSession(userID: String | undefined) {
     if (userID)
         session.id = userID
     session.log_in = true
+    await session.save()
 }
 
 export async function LogOutSession() {

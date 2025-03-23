@@ -1,10 +1,10 @@
 'use client'
 
-var QRCode = require('qrcode')
-import { redirect } from "next/navigation"
-import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
+    const route = useRouter()
+
     async function signOut () {
         await fetch('/api/session', {
             method: 'DELETE',
@@ -12,25 +12,8 @@ export default function Dashboard() {
                 'Content-Type': 'application/json',
             },        
         })
-        redirect('/')
+        route.push('/')
     }
-
-    useEffect(() => {
-        const canvas = document.getElementById('walletQR')!
-        const span = document.getElementById('walletAddr')!
-
-        fetch('/api/me', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },        
-        }).then((val) => val.json())
-        .then((res) =>{ 
-            QRCode.toCanvas(canvas, res.walletAddress)
-            span.innerText = res.walletAddress
-        })
-
-    })
 
     return (
         <>
@@ -38,9 +21,18 @@ export default function Dashboard() {
             <button className="bg-white text-black" onClick={signOut}>
                 Sign Out
             </button>
-            <div>uhh your wallet address qr</div>
-            <canvas id="walletQR"></canvas>
-            <div>Wallet Addr: <span id="walletAddr"></span></div>
+            <br></br>
+            <button onClick={() => {
+                route.push('/loan')
+            }} className="bg-white text-black">
+                Loaning
+            </button>
+            <br></br>
+            <button onClick={() => {
+                route.push('/send-money')
+            }} className="bg-white text-black">
+                Mr beast
+            </button>
         </>
     )
 }

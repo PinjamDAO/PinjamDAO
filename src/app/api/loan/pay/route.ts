@@ -1,7 +1,7 @@
 import { getLoanDetails, repayLoan, waitForTransaction } from "@/services/blockchain"
 import { getCurrentUser } from "@/services/session"
 import { getUSDCBalance } from "@/services/wallet"
-import { initiateDeveloperControlledWalletsClient, TransactionState } from "@circle-fin/developer-controlled-wallets"
+import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
 
 // pay your loan
@@ -17,9 +17,10 @@ export async function POST(request: Request) {
     const usdcBalance = await getUSDCBalance(user.walletAddress)
 
     // convert to wei (what the fuck is wei)
+    // todo: Figure out what the fuck is this
     const totalDue = loanDetails.totalDue
 
-    if (usdcBalance < totalDue) {
+    if (usdcBalance < Number(totalDue)) {
         return NextResponse.json({
             'msg': 'Not enough to repay load'
         }, { status: 402 })
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
 
     // you know what time it is, time to poll~~~
     const transData = await waitForTransaction(res.data!.id)
-    if (transData?.data?.transaction?.state !== TransactionState.Complete)
+    if (transData?.transaction?.state !== "COMPLETE")
         return NextResponse.json({
             msg: 'Transaction failed'
         }, { status: 500 })

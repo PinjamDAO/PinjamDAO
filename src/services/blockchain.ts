@@ -1,8 +1,7 @@
 import { ethers, Wallet } from "ethers";
 import dotenv from "dotenv";
-import TOKENS from "@/app/constant";
-import { BalancesData, TransactionState } from "@circle-fin/developer-controlled-wallets/dist/types/clients/developer-controlled-wallets";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
+import { getSessionID } from "./session";
 
 dotenv.config();
 
@@ -15,61 +14,6 @@ const IERC20Artifact = require("./contracts/IERC20.json");
 // Define contract addresses
 const MICROLOAN_ADDRESS = process.env.MICROLOAN_ADDRESS!;
 const USDC_ADDRESS = process.env.USDC_CONTRACT_ADDRESS!;
-
-// async function getContractInfo() {
-//   // Get the signer
-//   const [signer] = await ethers.getSigners();
-//   console.log("Connected with account:", signer.address);
-
-//   // Connect to MicroLoan contract
-//   const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
-
-//   // Connect to USDC contract
-//   const usdc = new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer);
-
-//   // Get contract info
-//   console.log("\n----- Contract Information -----");
-//   console.log(`USDC Address: ${await microLoan.usdcToken()}`);
-//   console.log(`Pyth Price Feed Address: ${await microLoan.pythPriceFeed()}`);
-//   console.log(`ETH Price ID: ${await microLoan.ethPriceId()}`);
-
-//   // Get pool stats
-//   console.log("\n----- Pool Statistics -----");
-//   console.log(`Total USDC Deposited: ${ethers.formatUnits(await microLoan.totalUSDCDeposited(), 6)} USDC`);
-//   console.log(`Total USDC Loaned: ${ethers.formatUnits(await microLoan.totalUSDCLoaned(), 6)} USDC`);
-//   console.log(`Available USDC: ${ethers.formatUnits(await microLoan.availableUSDC(), 6)} USDC`);
-
-//   // Get user balance
-//   console.log("\n----- User Balances -----");
-//   console.log(`ETH Balance: ${ethers.formatEther(await ethers.provider.getBalance(signer.address))} ETH`);
-//   console.log(`USDC Balance: ${ethers.formatUnits(await usdc.balanceOf(signer.address), 6)} USDC`);
-
-//   // Get user loan info
-//   const loan = await microLoan.loans(signer.address);
-//   console.log("\n----- User Loan Information -----");
-//   console.log(`Loan Amount: ${ethers.formatUnits(loan.loanAmount, 6)} USDC`);
-//   console.log(`Collateral Amount: ${ethers.formatEther(loan.collateralAmount)} ETH`);
-//   console.log(`Active: ${loan.active}`);
-//   console.log(`Liquidated: ${loan.liquidated}`);
-
-//   // Get user deposit info
-//   const deposit = await microLoan.deposits(signer.address);
-//   console.log("\n----- User Deposit Information -----");
-//   console.log(`Deposit Amount: ${ethers.formatUnits(deposit.amount, 6)} USDC`);
-//   console.log(`Interest Earned: ${ethers.formatUnits(deposit.interestEarned, 6)} USDC`);
-
-//   // Get expected available USDC if locked period passed
-//   if (deposit.amount > 0) {
-//     console.log(`Lock End Time: ${new Date(Number(deposit.lockEndTime) * 1000).toLocaleString()}`);
-//     const currentTime = Math.floor(Date.now() / 1000);
-//     if (currentTime >= Number(deposit.lockEndTime)) {
-//       console.log(`Lock period has ended. You can withdraw your USDC.`);
-//     } else {
-//       const timeRemaining = Number(deposit.lockEndTime) - currentTime;
-//       console.log(`Lock period will end in ${Math.floor(timeRemaining / 3600)} hours and ${Math.floor((timeRemaining % 3600) / 60)} minutes.`);
-//     }
-//   }
-// }
 
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -87,20 +31,32 @@ export async function waitForTransaction(id: string) {
         transactionDetails = await client.getTransaction({
             id: id
         })
-        const endStates: Array<TransactionState> = [TransactionState.Complete, TransactionState.Failed, TransactionState.Cancelled]
+        const endStates = [
+            "COMPLETE",
+            "FAILED",
+            "CANCELLED"
+        ]
+
+        console.log(
+            `Status of Transaction ID: ${transactionDetails.data?.transaction?.id}: ${transactionDetails.data?.transaction?.state}`
+        )
 
         done = endStates.includes(transactionDetails.data!.transaction!.state)
-        await sleep(1000)
+        await sleep(5000)
     }
-    return transactionDetails
+    return transactionDetails?.data
 }
 
 export async function connectToBlockchain() {
     const provider = new ethers.JsonRpcProvider(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`)
-    new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
-    return provider
+    const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
+    return {
+        provider: provider,
+        signer: signer
+    }
 }
 
+// what the fuck am i doing
 export async function payoutLoan(recvAddr: string, toSend: string) {
     const receiverAddress = recvAddr    
     const usdcContract = await connectToUSDC()
@@ -123,33 +79,29 @@ export async function payoutLoan(recvAddr: string, toSend: string) {
 
 export async function getLoanInfo() {
     // Get the signer
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner()
+    const { provider, signer } = await connectToBlockchain()
     // const [signer] = await ethers.getSigners();
     
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
     
-    const loan = await microLoan.loans(signer.address);
+    const loan = await microLoan.loans(await getSessionID());
     return loan;
 }
 
 export async function connectToUSDC() {
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner()
+    const { provider, signer } = await connectToBlockchain()
     return new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer)
 }
 
 export async function connectToMicroloan() {
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner()
+    const { provider, signer } = await connectToBlockchain()
     return new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);    
 }
 
 export async function depositUSDC(amount: string) {
   // Get the signer
-  const provider = await connectToBlockchain()
-  const signer = await provider.getSigner();
+  const { provider, signer } = await connectToBlockchain()
 
   // Connect to MicroLoan contract
   const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -175,15 +127,14 @@ export async function depositUSDC(amount: string) {
 
   // Deposit USDC
   console.log(`Depositing ${amount} USDC...`);
-  const depositTx = await microLoan.depositUSDC(amountInWei);
+  const depositTx = await microLoan.depositUSDC(amountInWei, await getSessionID());
   await depositTx.wait();
   console.log(`Successfully deposited ${amount} USDC!`);
 }
 
 export async function depositCollateral(amount: string) {
     // Get the signer
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner();
+    const { provider, signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -200,21 +151,20 @@ export async function depositCollateral(amount: string) {
 
     // Deposit ETH as collateral
     console.log(`Depositing ${amount} ETH as collateral...`);
-    const depositTx = await microLoan.depositCollateral({ value: amountInWei });
+    const depositTx = await microLoan.depositCollateral(await getSessionID(), { value: amountInWei });
     await depositTx.wait();
     console.log(`Successfully deposited ${amount} ETH as collateral!`);
 }
 
-export async function takeLoan(amount: string) {
+export async function takeLoan(amount: string, receipianAddr: string) {
     // Get the signer
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner();
+    const { provider, signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
 
     // Get loan details
-    const loan = await microLoan.loans(signer.address);
+    const loan = await microLoan.loans(await getSessionID());
     if (loan.active) {
         console.error("You already have an active loan!");
         return;
@@ -228,9 +178,6 @@ export async function takeLoan(amount: string) {
     // Convert amount to wei (USDC has 6 decimals)
     const amountInWei = ethers.parseUnits(amount, 6);
 
-    // Create a unique nullifier hash (in production you would integrate with WorldID)
-    const nullifierHash = ethers.encodeBytes32String(`loan-${Date.now()}`);
-
     // Check available USDC
     const availableUSDC = await microLoan.availableUSDC();
     if (availableUSDC < amountInWei) {
@@ -240,32 +187,37 @@ export async function takeLoan(amount: string) {
 
     // Take loan
     console.log(`Taking loan of ${amount} USDC...`);
-    const takeLoanTx = await microLoan.takeLoan(amountInWei, nullifierHash);
+    const takeLoanTx = await microLoan.takeLoan(amountInWei, await getSessionID(), receipianAddr);
     await takeLoanTx.wait();
     console.log(`Successfully borrowed ${amount} USDC!`);
     return amount
 }
 
+
 export async function getLoanDetails() {
     // Get the signer
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner();
+    const { provider, signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
-    const loanDetails = await microLoan.loans(signer.address)
-    const interest = await microLoan.calculateBorrowerInterest(signer.address);
-    const res = Object.assign(loanDetails, {
-        interest: interest,
-        totalDue: loanDetails.loanAmount + interest
-    })
-    return res
+    const loan = await microLoan.getLoanInfo(await getSessionID())
+
+    const res = {
+        loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
+        collateralAmount: ethers.formatEther(loan.collateralAmount), // in eth
+        startTime: Number(loan.startTime),
+        endTime: Number(loan.endTime),
+        active: loan.active,
+        liquidated: loan.liquidated,
+        interest: ethers.formatUnits(loan.interest, 6),
+        totalDue: ethers.formatUnits(loan.loanAmount + loan.interest, 6),
+    }
+   return res
 }
 
 export async function repayLoan(amount: string) {
     // Get the signer
-    const provider = await connectToBlockchain()
-    const signer = await provider.getSigner();
+    const { provider, signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -274,14 +226,14 @@ export async function repayLoan(amount: string) {
     const usdc = new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer);
 
     // Get loan details
-    const loan = await microLoan.loans(signer.address);
+    const loan = await microLoan.loans(await getSessionID());
     if (!loan.active) {
         console.error("You don't have an active loan to repay!");
         return;
     }
 
     // Calculate interest
-    const interest = await microLoan.calculateBorrowerInterest(signer.address);
+    const interest = await microLoan.calculateBorrowerInterest(await getSessionID());
     const totalDue = loan.loanAmount + interest;
     console.log(`Loan amount: ${ethers.formatUnits(loan.loanAmount, 6)} USDC`);
     console.log(`Interest accrued: ${ethers.formatUnits(interest, 6)} USDC`);
@@ -309,12 +261,12 @@ export async function repayLoan(amount: string) {
 
     // Repay loan
     console.log(`Repaying ${amount} USDC...`);
-    const repayTx = await microLoan.repayLoan(amountInWei);
+    const repayTx = await microLoan.repayLoan(amountInWei, await getSessionID());
     await repayTx.wait();
     console.log(`Successfully repaid ${amount} USDC!`);
 
     // Check if loan is fully repaid
-    const updatedLoan = await microLoan.loans(signer.address);
+    const updatedLoan = await microLoan.loans(await getSessionID());
     if (!updatedLoan.active) {
         console.log(`🎉 Loan fully repaid! Your collateral has been returned.`);
     } else {

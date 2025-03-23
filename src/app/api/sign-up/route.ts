@@ -28,7 +28,8 @@ export async function POST(request: Request) {
     const response = await client.createWallets({
         blockchains: ["ETH-SEPOLIA"],
         count: 1,
-        walletSetId: process.env.CIRCLE_WALLETSET_ID!
+        walletSetId: process.env.CIRCLE_WALLETSET_ID!,
+        accountType: "SCA" // yeeepeee, free gas fees :DD
     });
     const walletID = response.data?.wallets[0].id
     const walletAddress = response.data?.wallets[0].address
