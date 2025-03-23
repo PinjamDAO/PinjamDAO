@@ -50,6 +50,7 @@ export async function waitForTransaction(id: string) {
 export async function connectToBlockchain() {
     const provider = new ethers.JsonRpcProvider(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`)
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider)
+
     return {
         provider: provider,
         signer: signer
@@ -272,4 +273,15 @@ export async function repayLoan(amount: string) {
     } else {
         console.log(`Remaining loan amount: ${ethers.formatUnits(updatedLoan.loanAmount, 6)} USDC`);
     }
+}
+
+export async function sendCollateralToCircle(amount: string, circleAddr: string) {
+    const { provider, signer } = await connectToBlockchain()
+    const tx = {
+        from: process.env.WALLET_ADDR,
+        to: circleAddr,
+        value: ethers.parseEther(amount),
+    }
+    const transaction = await signer.sendTransaction(tx)
+    await transaction.wait()
 }

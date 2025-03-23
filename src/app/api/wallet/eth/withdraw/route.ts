@@ -1,13 +1,13 @@
-import { depositCollateral, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
-import { getCurrentUser } from "@/services/session";
-import { getEthBalance } from "@/services/wallet";
-import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
-import { NextResponse } from "next/server";
+import { waitForTransaction } from "@/services/blockchain"
+import { getCurrentUser } from "@/services/session"
+import { getEthBalance } from "@/services/wallet"
+import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
+import { NextResponse } from "next/server"
 
-// pay collateral, get loan
-export async function POST(request: Request) {
-    const user = await getCurrentUser()
+// withdraw collateral
+export async function POST( request: Request ) {
     const data = await request.json()
+    const user = await getCurrentUser()
 
     if (user === null) {
         return NextResponse.json({
@@ -15,11 +15,12 @@ export async function POST(request: Request) {
         }, { status: 401 })
     }
 
-    if (!data.addr) 
+    if (!data.addr || !data.amount) 
         return NextResponse.json({
             'msg': 'empty receiving addr'
         }, { status: 401 })
-
+        
+    
     let balance = await getEthBalance(user.walletAddress)
 
     const MIN = 0.000000000000000001
@@ -31,19 +32,20 @@ export async function POST(request: Request) {
         }, { status: 402 })
     }
 
-    // circle complains if you want to transfer everything out
-    balance = Number((balance - MIN).toFixed(18))
-
-    // everything below here should be dispatched as a job, but im too fucking lazy
-    // make payment n loan baby
+    if (data.amount > balance - MIN) {
+        return NextResponse.json({
+            'msg': 'Not enough in wallet'
+        }, { status: 400 })
+    }
+    
     const client = initiateDeveloperControlledWalletsClient({
         apiKey: process.env.CIRCLE_API_KEY!,
         entitySecret: process.env.CIRCLE_SECRET!
     });
 
     const res = await client.createTransaction({
-        amount: [balance.toString()],
-        destinationAddress: process.env.WALLET_ADDR!,
+        amount: [data.amount.toString()],
+        destinationAddress: data.addr,
         blockchain: "ETH-SEPOLIA",
         tokenAddress: "",
         walletId: user.walletID,
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
         }
     })
 
-    // poll for the transaction here to be completed
+    // we really dont need to poll here actually
     const transData = await waitForTransaction(res.data!.id);
     console.log(transData)
     if (transData?.transaction?.state !== "COMPLETE")
@@ -63,17 +65,5 @@ export async function POST(request: Request) {
             msg: 'Transaction failed'
         }, { status: 500 })
 
-
-    // oh boy oh boy time to interact with blockchain!@!!!!
-    await depositCollateral(balance.toString())
-    const amount = await takeLoan(balance.toString(), data.addr)
-
-    if (amount === undefined)
-        return NextResponse.json({
-            msg: 'blockchain failed, request refund from devs' 
-        }, { status: 500 })
-
-    return NextResponse.json({ 
-        loan_amount: amount 
-    })
+    return NextResponse.json({})
 }

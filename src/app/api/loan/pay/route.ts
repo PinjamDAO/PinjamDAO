@@ -1,4 +1,4 @@
-import { getLoanDetails, repayLoan, waitForTransaction } from "@/services/blockchain"
+import { getLoanDetails, repayLoan, sendCollateralToCircle, waitForTransaction } from "@/services/blockchain"
 import { getCurrentUser } from "@/services/session"
 import { getUSDCBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
@@ -58,6 +58,9 @@ export async function POST(request: Request) {
 
     // personal wallet to blockchain epic
     await repayLoan(totalDue)
+
+    // need to repay collateral here, send to circle wallet
+    await sendCollateralToCircle(totalDue, user.walletAddress);
 
     return NextResponse.json({})
 }
