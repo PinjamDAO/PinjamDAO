@@ -38,7 +38,8 @@ function ProfilePicDropdown() {
 
 }
 
-export default function Header() {
+export default function Header({ userLoggedIn }: { userLoggedIn: boolean}) {
+  
   return (
     <header className="fixed top-0 left-0 w-full h-18 z-10">
       <div className="flex items-center justify-between w-full h-full px-22
@@ -49,10 +50,13 @@ export default function Header() {
             <div className="font-bold text-2xl">DAO</div>
           </div>
         </div>
-        <div className="flex flex-row space-x-5">
+        {
+          userLoggedIn && <div className="flex flex-row space-x-5">
           <LoanInvestmentSwitch />
           <ProfilePicDropdown />
         </div>
+        }
+        
       </div>
       <hr className="border-1 border-gray-200"/>
     </header>

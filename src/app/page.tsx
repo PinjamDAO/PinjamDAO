@@ -87,7 +87,7 @@ function Login() {
 export default function Home() {
   return (
     <div className="flex flex-col h-screen w-screen bg-[#EFF8FC] justify-center items-center">
-      <Header />
+      <Header userLoggedIn={false}/>
       <div className="flex flex-row w-full justify-evenly items-center">
         <Slogan />
         <Login />

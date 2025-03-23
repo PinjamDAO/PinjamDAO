@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen w-screen bg-[#EFF8FC] items-center">
-      <Header />
+      <Header userLoggedIn={true}/>
       <div className="flex-grow p-12 w-full">
         <div className="flex flex-col space-y-8 w-full">
           <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {username}!</div>

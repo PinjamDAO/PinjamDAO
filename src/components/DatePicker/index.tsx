@@ -70,7 +70,7 @@ export function DatePicker() {
       <Popover>
         <PopoverTrigger asChild>
           <motion.button 
-            className="flex flex-row justify-center items-center w-12 h-12 bg-[#6E61E3]
+            className="flex flex-row justify-center items-center w-12 h-12 bg-[#5202DB]
             rounded-lg cursor-pointer text-white font-semibold"
             whileHover={{
                 scale: 1.05,
