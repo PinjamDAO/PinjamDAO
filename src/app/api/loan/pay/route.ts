@@ -39,16 +39,16 @@ export async function POST(request: Request) {
     const res = await client.createTransaction({
         amount: [totalDue.toString()],
         destinationAddress: process.env.WALLET_ADDR!,
+        blockchain: 'ETH-SEPOLIA',
         tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
         walletId: user.walletID,
         fee: {
             type: 'level',
             config: {
-                feeLevel: 'LOW'
+                feeLevel: 'HIGH'
             }
         }
     })
-
     // you know what time it is, time to poll~~~
     const transData = await waitForTransaction(res.data!.id)
     if (transData?.transaction?.state !== "COMPLETE")

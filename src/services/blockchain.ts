@@ -78,7 +78,7 @@ export async function payoutLoan(recvAddr: string, toSend: string) {
     }
 }
 
-export async function getLoanInfo() {
+export async function getActiveLoan() {
     // Get the signer
     const { provider, signer } = await connectToBlockchain()
     // const [signer] = await ethers.getSigners();
@@ -86,7 +86,7 @@ export async function getLoanInfo() {
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
     
-    const loan = await microLoan.loans(await getSessionID());
+    const loan = await microLoan.getActiveLoan(await getSessionID());
     return loan;
 }
 
@@ -165,7 +165,7 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
 
     // Get loan details
-    const loan = await microLoan.loans(await getSessionID());
+    const loan = await microLoan.getActiveLoan(await getSessionID());
     if (loan.active) {
         console.error("You already have an active loan!");
         return;
@@ -194,6 +194,34 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     return amount
 }
 
+export async function getLoanHistory() {
+    // Get the signer
+    const { provider, signer } = await connectToBlockchain()
+    const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
+    const ret: any[] = []
+
+    // what?
+    const totalLoanCount = await microLoan.getLoanHistoryCount(await getSessionID())
+
+    for (let i = 0; i < totalLoanCount; ++i) {
+        const loan = await microLoan.getLoanFromHistory(await getSessionID(), i)
+    
+        const res = {
+            loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
+            collateralAmount: ethers.formatEther(loan.collateralAmount), // in eth
+            startTime: Number(loan.startTime),
+            endTime: Number(loan.endTime),
+            active: loan.active,
+            liquidated: loan.liquidated,
+            interest: ethers.formatUnits(loan.interest, 6),
+            totalDue: ethers.formatUnits(loan.loanAmount + loan.interest, 6),
+        }
+
+        ret.concat(res)
+    }
+    // Connect to MicroLoan contract
+   return ret
+}
 
 export async function getLoanDetails() {
     // Get the signer
@@ -201,7 +229,7 @@ export async function getLoanDetails() {
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
-    const loan = await microLoan.getLoanInfo(await getSessionID())
+    const loan = await microLoan.getActiveLoan(await getSessionID())
 
     const res = {
         loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
@@ -227,7 +255,7 @@ export async function repayLoan(amount: string) {
     const usdc = new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer);
 
     // Get loan details
-    const loan = await microLoan.loans(await getSessionID());
+    const loan = await microLoan.getActiveLoan(await getSessionID());
     if (!loan.active) {
         console.error("You don't have an active loan to repay!");
         return;
@@ -241,7 +269,9 @@ export async function repayLoan(amount: string) {
     console.log(`Total due: ${ethers.formatUnits(totalDue, 6)} USDC`);
 
     // // Convert amount to wei (USDC has 6 decimals)
-    const amountInWei = ethers.parseUnits(amount, 6);
+    const amountInWei = totalDue;
+
+    // checked at api
     // if (amountInWei > totalDue) {
     //     console.error(`Repayment amount exceeds total due. Maximum: ${ethers.formatUnits(totalDue, 6)} USDC`);
     //     return;
@@ -267,7 +297,7 @@ export async function repayLoan(amount: string) {
     console.log(`Successfully repaid ${amount} USDC!`);
 
     // Check if loan is fully repaid
-    const updatedLoan = await microLoan.loans(await getSessionID());
+    const updatedLoan = await microLoan.getActiveLoan(await getSessionID());
     if (!updatedLoan.active) {
         console.log(`🎉 Loan fully repaid! Your collateral has been returned.`);
     } else {

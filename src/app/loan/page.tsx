@@ -74,6 +74,14 @@ function ApplyForLoan() {
 
 function DisplayLoanDetails (props: any) {
     const [ walletCode, setWalletCode ] = useState("")
+    const [ moneyCount, setMoneyCount ] = useState(0)
+
+    const refreshUSDC = () => {
+        fetch('/api/wallet/usdc', {
+            method: 'GET'
+        }).then((val) => val.json())
+        .then(res => setMoneyCount(res.usdc))
+    }
 
     useEffect(() => {
         const canvas = document.getElementById('walletQR')!
@@ -88,6 +96,8 @@ function DisplayLoanDetails (props: any) {
             QRCode.toCanvas(canvas, res.walletAddress)
             setWalletCode(res.walletAddress)
         })
+
+        refreshUSDC()
     }, [])
 
     const loan = props.loan
@@ -114,6 +124,12 @@ function DisplayLoanDetails (props: any) {
                     })
                 }
             } className="bg-white text-black">Repay your loan</button>
+            <div>Wallet Stats for Nerds</div>
+            <div>{moneyCount.toFixed(6)} USDC</div>
+            <button onClick={async () => {
+                refreshUSDC()
+            }}>Refresh money count</button>
+
         </div>
     )
 }
@@ -131,7 +147,7 @@ export default function Loan() {
     })
 
     useEffect(() => {
-        fetch('/api/me/loan', {
+        fetch('/api/me/loan/active', {
             method: 'GET'
         })
         .then((data) => data.json())

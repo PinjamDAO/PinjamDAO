@@ -1,8 +1,8 @@
-import { getLoanDetails, getLoanHistory } from "@/services/blockchain"
+import { getLoanDetails } from "@/services/blockchain"
 import { getCurrentUser } from "@/services/session"
 import { NextResponse } from "next/server"
 
-// get details on history of loans
+// get details on your ACTIVE loan
 export async function GET(request: Request) {
     const user = await getCurrentUser()
     if (user === null) {
@@ -11,6 +11,6 @@ export async function GET(request: Request) {
         }, { status: 401 })
     }
 
-    const loanDetails = await getLoanHistory()
+    const loanDetails = await getLoanDetails()
     return NextResponse.json(loanDetails)
 }

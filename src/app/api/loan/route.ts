@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         fee: {
             type: 'level',
             config: {
-                feeLevel: 'LOW'
+                feeLevel: 'HIGH'
             }
         }
     })
