@@ -1,8 +1,47 @@
+import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks"
+import { userType } from "@/models/users"
 import { waitForTransaction } from "@/services/blockchain"
+import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
 import { getEthBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
+
+async function createJob(user: userType, amount: number, receivAddr: string) {
+    await connectDB()
+
+    const job = await Task.create({
+        userId: user.worldId,
+        taskType: TaskType.WithdrawETH
+    })
+    await job.save()
+
+    const client = initiateDeveloperControlledWalletsClient({
+        apiKey: process.env.CIRCLE_API_KEY!,
+        entitySecret: process.env.CIRCLE_SECRET!
+    });
+
+    await updateTaskState(job, TaskProgress.RefundingCollateral)
+    const res = await client.createTransaction({
+        amount: [amount.toString()],
+        destinationAddress: receivAddr,
+        blockchain: "ETH-SEPOLIA",
+        tokenAddress: "",
+        walletId: user.walletID,
+        fee: {
+            type: 'level',
+            config: {
+                feeLevel: 'HIGH'
+            }
+        }
+    })
+
+    const transData = await waitForTransaction(res.data!.id);
+    if (transData?.transaction?.state !== "COMPLETE")
+        return await updateTaskState(job, TaskProgress.Failed)
+
+    return await updateTaskState(job, TaskProgress.Done)
+}
 
 // withdraw collateral
 export async function POST( request: Request ) {
@@ -38,32 +77,6 @@ export async function POST( request: Request ) {
         }, { status: 400 })
     }
     
-    const client = initiateDeveloperControlledWalletsClient({
-        apiKey: process.env.CIRCLE_API_KEY!,
-        entitySecret: process.env.CIRCLE_SECRET!
-    });
-
-    const res = await client.createTransaction({
-        amount: [data.amount.toString()],
-        destinationAddress: data.addr,
-        blockchain: "ETH-SEPOLIA",
-        tokenAddress: "",
-        walletId: user.walletID,
-        fee: {
-            type: 'level',
-            config: {
-                feeLevel: 'HIGH'
-            }
-        }
-    })
-
-    // we really dont need to poll here actually
-    const transData = await waitForTransaction(res.data!.id);
-    console.log(transData)
-    if (transData?.transaction?.state !== "COMPLETE")
-        return NextResponse.json({
-            msg: 'Transaction failed'
-        }, { status: 500 })
-
+    createJob(user, data.amount, data.addr)
     return NextResponse.json({})
 }

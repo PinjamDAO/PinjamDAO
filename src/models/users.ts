@@ -1,12 +1,12 @@
 import mongoose from "mongoose"
 
 export type userType = {
-    _id: String, 
-    username: String,
-    worldId: String,
+    _id: string, 
+    username: string,
+    worldId: string,
     creditScore: Number,
-    walletID: Number,
-    walletAddress: Number,
+    walletID: string,
+    walletAddress: string,
 }
 
 const userSchema = new mongoose.Schema({

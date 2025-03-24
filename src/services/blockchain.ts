@@ -211,14 +211,13 @@ export async function getLoanHistory() {
             collateralAmount: ethers.formatEther(loan.collateralAmount), // in eth
             startTime: Number(loan.startTime),
             endTime: Number(loan.endTime),
-            active: loan.active,
-            liquidated: loan.liquidated,
-            interest: ethers.formatUnits(loan.interest, 6),
-            totalDue: ethers.formatUnits(loan.loanAmount + loan.interest, 6),
+            totalRepaid: ethers.formatUnits(loan.totalRepaid, 6),
+            closedTime: Number(loan.closedTime)
         }
 
-        ret.concat(res)
+        ret.push(res)
     }
+
     // Connect to MicroLoan contract
    return ret
 }
@@ -300,8 +299,10 @@ export async function repayLoan(amount: string) {
     const updatedLoan = await microLoan.getActiveLoan(await getSessionID());
     if (!updatedLoan.active) {
         console.log(`🎉 Loan fully repaid! Your collateral has been returned.`);
+        return true
     } else {
         console.log(`Remaining loan amount: ${ethers.formatUnits(updatedLoan.loanAmount, 6)} USDC`);
+        return false
     }
 }
 

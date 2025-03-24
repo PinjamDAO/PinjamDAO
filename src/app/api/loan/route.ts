@@ -1,9 +1,55 @@
+import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks";
+import { userType } from "@/models/users";
 import { connectToBlockchain, connectToMicroloan, depositUSDC, getLoanDetails, waitForTransaction } from "@/services/blockchain";
+import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
 import { getEthBalance, getUSDCBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { ethers } from "ethers";
 import { NextResponse } from "next/server";
+
+async function createJob(balance: number, user: userType) {
+    await connectDB()
+
+    const job = await Task.create({
+        userId: user.worldId,
+        TaskType: TaskType.SendUSDC
+    })
+    await job.save()
+
+    // transfer to main wallet
+    const client = initiateDeveloperControlledWalletsClient({
+        apiKey: process.env.CIRCLE_API_KEY!,
+        entitySecret: process.env.CIRCLE_SECRET!
+    });
+
+    await updateTaskState(job, TaskProgress.USDCToMainWallet)
+    const res = await client.createTransaction({
+        amount: [balance.toString()],
+        destinationAddress: process.env.WALLET_ADDR!,
+        tokenAddress: process.env.USDC_CONTRACT_ADDRESS!, // turns out, they are the same thing
+        blockchain: "ETH-SEPOLIA",
+        walletId: user.walletID,
+        fee: {
+            type: 'level',
+            config: {
+                feeLevel: 'HIGH'
+            }
+        }
+    })
+
+    // poll for the transaction here to be completed
+    const transData = await waitForTransaction(res.data!.id);
+
+    if (transData?.transaction?.state !== "COMPLETE")
+        return await updateTaskState(job, TaskProgress.Failed)
+
+    await updateTaskState(job, TaskProgress.USDCToBlockchain)
+    // throw from wallet to blockchain
+    await depositUSDC(balance.toString())
+
+    await updateTaskState(job, TaskProgress.Done)
+}
 
 // send money for people to loan hehehaw
 export async function POST(request: Request) {
@@ -26,38 +72,7 @@ export async function POST(request: Request) {
     }
     balance = Number((balance - MIN).toFixed(6))
 
-    // everything below here should be dispatched as a job, but im too fucking lazy
-    // transfer to main wallet
-    const client = initiateDeveloperControlledWalletsClient({
-        apiKey: process.env.CIRCLE_API_KEY!,
-        entitySecret: process.env.CIRCLE_SECRET!
-    });
-
-    const res = await client.createTransaction({
-        amount: [balance.toString()],
-        destinationAddress: process.env.WALLET_ADDR!,
-        tokenAddress: process.env.USDC_CONTRACT_ADDRESS!, // turns out, they are the same thing
-        blockchain: "ETH-SEPOLIA",
-        walletId: user.walletID,
-        fee: {
-            type: 'level',
-            config: {
-                feeLevel: 'HIGH'
-            }
-        }
-    })
-
-    // poll for the transaction here to be completed
-    const transData = await waitForTransaction(res.data!.id);
-    if (transData?.transaction?.state !== "COMPLETE")
-        return NextResponse.json({
-            msg: 'Transaction failed'
-        }, { status: 500 })
-
-    // throw from wallet to blockchain
-    await depositUSDC(balance.toString())
-
-    // done
+    createJob(balance, user)
     return NextResponse.json({})
 }
 

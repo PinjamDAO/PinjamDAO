@@ -57,10 +57,12 @@ export async function POST(request: Request) {
         }, { status: 500 })
 
     // personal wallet to blockchain epic
-    await repayLoan(totalDue)
+    if (await repayLoan(totalDue)) {
+        // if repayLoan returned true, loan is fully repaid
+        // need to repay collateral here, send to circle wallet
+        await sendCollateralToCircle(totalDue, user.walletAddress);
+    }
 
-    // need to repay collateral here, send to circle wallet
-    await sendCollateralToCircle(totalDue, user.walletAddress);
 
     return NextResponse.json({})
 }
