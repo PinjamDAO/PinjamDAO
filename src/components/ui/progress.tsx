@@ -23,9 +23,6 @@ function Progress({
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root>) {
 
-  console.log(value)
-  console.log(calculateGradientColor(value || 0))
-
   return (
     <ProgressPrimitive.Root
       data-slot="progress"

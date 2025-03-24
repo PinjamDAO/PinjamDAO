@@ -21,8 +21,11 @@ import {
 import { Progress } from "@/components/ui/progress"
 import Image from "next/image";
 import { motion } from "motion/react";
-import { useState } from "react";
-import Modal from "@/components/Modal";
+
+import { useQRCode } from 'next-qrcode';
+import { useEffect, useState } from "react";
+import { browser } from "process";
+import { set } from "mongoose";
 
 function LoanInfoCarousel() {
 
@@ -65,10 +68,84 @@ function HistoryCard() {
 
 }
 
-function NewLoanApplicationDialog() {
+function AddFundsDialog() {
+
+  const { Canvas } = useQRCode()
+
+  const addr = "address"
 
   return(
     <Dialog>
+      <DialogTrigger>
+        <motion.div
+          className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold text-4xl text-center cursor-pointer select-none"
+          whileHover={{
+            scale: 1.1
+          }}
+          whileTap={{
+            scale: 0.9
+          }}
+        >
+          +
+        </motion.div>
+      </DialogTrigger>
+      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
+        <DialogHeader>
+          <DialogTitle className="font-bold text-4xl text-black pt-5">Add money</DialogTitle>
+        </DialogHeader>
+        <Canvas
+          text={addr}
+          options={{
+            errorCorrectionLevel: 'M',
+            margin: 1,
+            scale: 8,
+            width: 400,
+            color: {
+              dark: '#5202DB',
+              light: '#EFF8FC',
+            },
+          }}
+        />
+        <div className="font-semibold text-xl px-10 text-center">Scan the QR Code with your crypto wallet such as Metamask.</div>
+      </DialogContent>
+    </Dialog>
+  )
+
+}
+
+function NewLoanApplicationDialog() {
+
+  const [open, setOpen] = useState(false)
+  const [borrowAmount, setBorrowAmount] = useState(0)
+  const [collateralAmount, setCollateralAmount] = useState(0)
+
+  const annualInterest = 15
+  const repaymentDurationMonths = 1
+
+  const [ETHToUSDPrice, setETHToUSDPrice] = useState(0)
+
+  useEffect(() => {
+
+    fetch('https://hermes.pyth.network/api/latest_price_feeds?ids[]=0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', {
+      method: 'GET',
+    }).then((resp) => {
+      if (resp.ok) {
+        return resp.json().then((json) => setETHToUSDPrice(json[0].price.price * Math.pow(10, json[0].price.expo)))
+      }
+    })
+
+  }, [])
+
+  const getAnnualInterest = () => {
+    return (annualInterest)
+  }
+
+  const getRepaymentDurationMonths = () => {
+    return (repaymentDurationMonths)
+  }
+
+  return(
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <motion.div
           className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
@@ -82,14 +159,49 @@ function NewLoanApplicationDialog() {
             New Loan
         </motion.div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
         <DialogHeader>
-          <DialogTitle>Are you absolutely sure?</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your account
-            and remove your data from our servers.
-          </DialogDescription>
+          <DialogTitle className="font-bold text-4xl text-black pt-5">New Loan Application</DialogTitle>
         </DialogHeader>
+          <div className="flex flex-col space-y-3">
+            <div className="flex text-black font-semibold text-2xl pl-2">I want to borrow</div>
+            <div className="flex flex-row justify-center items-center bg-white w-96 h-16 px-5
+            rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-black font-semibold text-2xl">
+              <input className="flex w-72 h-16 p-2 focus:outline-0" type="number" onChange={(e) => setBorrowAmount(Number(e.target.value))}/>
+              <div className="">USDC</div>
+            </div>
+          </div>
+          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
+          <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
+            <div className="flex text-black font-bold text-3xl">Loan Details</div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Amount to borrow:</div>
+              <div>{borrowAmount} USDC</div>
+            </div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Collateral:</div>
+              <div>{(borrowAmount / ETHToUSDPrice).toFixed(6)} ETH</div>
+            </div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Annual Interest:</div>
+              <div>{getAnnualInterest()}%</div>
+            </div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Repayment duration:</div>
+              <div>{getRepaymentDurationMonths()} Months</div>
+            </div>
+          </div>
+            <motion.div
+            className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
+            whileHover={{
+              scale: 1.1
+            }}
+            whileTap={{
+              scale: 0.9
+            }}
+            >
+              Apply
+          </motion.div>
       </DialogContent>
     </Dialog>
   )
@@ -101,7 +213,8 @@ export default function Dashboard() {
 
   const username = "User"
 
-  const balance = 10000
+  const usdcBalance = 10000
+  const ethBalance = 200
   const currency = "USDC"
 
   return (
@@ -112,19 +225,11 @@ export default function Dashboard() {
           <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {username}!</div>
           <div className="flex flex-col space-y-5 px-10">
             <div className="font-semibold text-black text-4xl">Total Balance</div>
-            <div className="flex flex-row justify-start items-end space-x-5">
-              <div className="font-bold text-black text-6xl">{balance.toLocaleString()} USDC</div>
-                <motion.button
-                  className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold text-4xl text-center cursor-pointer select-none"
-                  whileHover={{
-                    scale: 1.1
-                  }}
-                  whileTap={{
-                    scale: 0.9
-                  }}
-                >
-                  +
-                </motion.button>
+            <div className="flex flex-row justify-start items-center space-x-5">
+              <div className="font-bold text-black text-6xl">{usdcBalance.toLocaleString()} USDC</div>
+              <div className="flex justify-center items-center size-3 bg-black rounded-full"/>
+              <div className="font-bold text-black text-6xl">{ethBalance.toLocaleString()} ETH</div>
+              <AddFundsDialog />
             </div>
           </div>
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
@@ -151,7 +256,7 @@ export default function Dashboard() {
               <HistoryCard />
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>
-            <div className="flex flex-col space-y-12 w-[45%]">
+            <div className="flex flex-col space-y-5 w-[45%]">
               <div className="text-black text-3xl font-bold">Credit Standing</div>
               <div className="flex flex-col space-y-2">
                 <div className="font-semibold text-xl">Loan Frequency</div>

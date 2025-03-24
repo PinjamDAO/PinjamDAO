@@ -10,12 +10,11 @@ import {
 import { motion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
  
-export function DatePicker() {
+export function DatePicker({ date, setDate }: { date: Date, setDate: (d: Date) => void}) {
 
   const dayRef = useRef<HTMLInputElement>(null)
   const monthRef = useRef<HTMLInputElement>(null)
   const yearRef = useRef<HTMLInputElement>(null)
-  const [date, setDate] = useState<Date>(new Date(Date.now()))
 
   useEffect(() => {
 

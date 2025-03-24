@@ -11,7 +11,6 @@ import Header from "@/components/Header";
 import DropdownWithSearch from "@/components/DropdownWithSearch";
 import Dropdown from "@/components/Dropdown";
 
-
 const states = [
   'Perlis',
   'Pahang',
@@ -63,6 +62,24 @@ const residency = [
   'Non-citizen'
 ]
 
+type UserInfo = {
+  firstName: string,
+  middleName: string,
+  lastName: string,
+  dateOfBirth: Date,
+  gender: string,
+  ethnicity: string,
+  religion: string,
+  residencyStatus: string,
+  employmentStatus: string,
+  maritialStatus: string,
+  educationLevel: string,
+  phoneNumber: string,
+  address: string,
+  postcode: string,
+  city: string,
+  state: string
+}
 
 
 export default function SignUp() {
@@ -75,17 +92,28 @@ export default function SignUp() {
   const [residencyStatus, setResidencyStatus] = useState('')
   const [educationLevel, setEducationLevel] = useState('')
   const [employmentStatus, setEmploymentStatus] = useState('')
-
-  useEffect(() => {
-
-    console.log(gender)
-
-  }, [gender])
+  const [dob, setDOB] = useState<Date>(new Date(Date.now()))
 
   const submitSignUp = async (formdata: FormData) => {
+  
       const object = {
-          username: formdata.get('username')
-      }
+          firstName: formdata.get('firstName'),
+          middleName: formdata.get('middleName'),
+          lastName: formdata.get('lastName'),
+          dateOfBirth: dob,
+          gender,
+          ethnicity: formdata.get('ethnicity'),
+          religion: formdata.get('religion'),
+          residencyStatus,
+          employmentStatus,
+          maritialStatus,
+          educationLevel,
+          phoneNumber: formdata.get('phone'),
+          address: formdata.get('address1') + ' ' + formdata.get('address2'),
+          postcode: formdata.get('postcode'),
+          city: formdata.get('city'),
+          state: formdata.get('state')
+      } as UserInfo
 
       // halleluyah
       const response = await fetch('/api/sign-up', {
@@ -115,21 +143,21 @@ export default function SignUp() {
                 <div className="space-y-1">
                     <div className="text-xl pl-2">First Name</div>
                     <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                    name="fullName" />
+                    name="firstName" />
                   </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Middle Name</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="fullName" />
+                  name="middleName" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Last Name</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="fullName" />
+                  name="lastName" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Date of Birth</div>
-                  <DatePicker />
+                  <DatePicker date={dob} setDate={setDOB}/>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Gender</div>
@@ -138,7 +166,7 @@ export default function SignUp() {
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Identification Number</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="IDNumber" placeholder="xxxxxx-xx-xxxx"/>
+                  name="idNumber" placeholder="xxxxxx-xx-xxxx"/>
                 </div>
               </div>
 
@@ -180,22 +208,22 @@ export default function SignUp() {
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Address Line 1</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="phone"/>
+                  name="address1"/>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Address Line 2</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="phone"/>
+                  name="address2"/>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Postcode</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="username" />
+                  name="postcode" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">City</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="fullName" />
+                  name="city" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-xl pl-2">State</div>
@@ -204,8 +232,6 @@ export default function SignUp() {
               </div>
 
             </div>
-
-
 
             <motion.button 
               className="flex flex-row justify-center items-center w-24 h-12 bg-[#6E61E3]

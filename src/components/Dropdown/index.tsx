@@ -14,14 +14,14 @@ export default function Dropdown({ options, label, setSelected}: {options: strin
   return (
     <Select onValueChange={setSelected}>
       <SelectTrigger className="flex justify-center items-center bg-white text-black w-96
-      p-6 -mb-[1px] rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-md">
+      p-6 -mb-[1px] rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-md cursor-pointer select-none">
         <SelectValue placeholder={`Select a ${label}`} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>{label}</SelectLabel>
           {
-            options.map((option, i) => <SelectItem key={i} value={option}>{option}</SelectItem>)
+            options.map((option, i) => <SelectItem key={i} value={option} className="cursor-pointer">{option}</SelectItem>)
           }
         </SelectGroup>
       </SelectContent>
