@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select"
 
 
-export default function Dropdown({ options, label, setSelected}: {options: string[], label: string, selected: string, setSelected: (s: string) => void}) {
+export default function Dropdown({ options, label, setSelected }: {options: string[], label: string, selected: string, setSelected: (s: string) => void}) {
 
   return (
     <Select onValueChange={setSelected}>

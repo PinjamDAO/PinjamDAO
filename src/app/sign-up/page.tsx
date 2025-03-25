@@ -44,9 +44,9 @@ const maritial = [
 ]
 
 const education = [
-  'PhD',
+  'Doctorate',
   'Masters',
-  'Undergraduate',
+  'Bachelor',
   'Secondary',
   'No Education'
 ]
@@ -54,6 +54,7 @@ const education = [
 const employment = [
   'Employed',
   'Unemployed',
+  'Self-Employed',
   'Student'
 ]
 
@@ -112,7 +113,7 @@ export default function SignUp() {
           address: formdata.get('address1') + ' ' + formdata.get('address2'),
           postcode: formdata.get('postcode'),
           city: formdata.get('city'),
-          state: formdata.get('state')
+          state: state
       } as UserInfo
 
       // halleluyah

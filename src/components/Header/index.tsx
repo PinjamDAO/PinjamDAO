@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Image from 'next/image';
 import { redirect } from "next/navigation";
 
 function LoanInvestmentSwitch() {
@@ -38,8 +39,7 @@ function ProfilePicDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
-        <motion.div className="size-10 rounded-full bg-amber-400 border-1 border-none hover:border-solid border-black transition-all"
-          ></motion.div>
+        <Image src='/user.svg' alt='pfp' width={40} height={40} className="rounded-full border-1 border-none hover:scale-105 border-black transition-all"/>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="mt-4">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>

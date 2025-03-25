@@ -25,6 +25,7 @@ import { motion } from "motion/react";
 import { useQRCode } from 'next-qrcode';
 import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
+import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 
 function LoanInfoCarousel() {
 
@@ -117,100 +118,7 @@ function AddFundsDialog({ walletAddress }: { walletAddress: string | undefined }
 
 }
 
-function NewLoanApplicationDialog() {
 
-  const [open, setOpen] = useState(false)
-  const [borrowAmount, setBorrowAmount] = useState(0)
-  const [collateralAmount, setCollateralAmount] = useState(0)
-
-  const annualInterest = 15
-  const repaymentDurationMonths = 1
-
-  const [ETHToUSDPrice, setETHToUSDPrice] = useState(0)
-
-  useEffect(() => {
-
-    fetch('https://hermes.pyth.network/api/latest_price_feeds?ids[]=0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', {
-      method: 'GET',
-    }).then((resp) => {
-      if (resp.ok) {
-        return resp.json().then((json) => setETHToUSDPrice(json[0].price.price * Math.pow(10, json[0].price.expo)))
-      }
-    })
-
-  }, [])
-
-  const getAnnualInterest = () => {
-    return (annualInterest)
-  }
-
-  const getRepaymentDurationMonths = () => {
-    return (repaymentDurationMonths)
-  }
-
-  return(
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <motion.div
-          className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
-          whileHover={{
-            scale: 1.1
-          }}
-          whileTap={{
-            scale: 0.9
-          }}
-          >
-            New Loan
-        </motion.div>
-      </DialogTrigger>
-      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
-        <DialogHeader>
-          <DialogTitle className="font-bold text-4xl text-black pt-5">New Loan Application</DialogTitle>
-        </DialogHeader>
-          <div className="flex flex-col space-y-3">
-            <div className="flex text-black font-semibold text-2xl pl-2">I want to borrow</div>
-            <div className="flex flex-row justify-center items-center bg-white w-96 h-16 px-5
-            rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-black font-semibold text-2xl">
-              <input className="flex w-72 h-16 p-2 focus:outline-0" type="number" onChange={(e) => setBorrowAmount(Number(e.target.value))}/>
-              <div className="">USDC</div>
-            </div>
-          </div>
-          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
-          <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
-            <div className="flex text-black font-bold text-3xl">Loan Details</div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Amount to borrow:</div>
-              <div>{borrowAmount} USDC</div>
-            </div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Collateral:</div>
-              <div>{(borrowAmount / ETHToUSDPrice).toFixed(6)} ETH</div>
-            </div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Annual Interest:</div>
-              <div>{getAnnualInterest()}%</div>
-            </div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Repayment duration:</div>
-              <div>{getRepaymentDurationMonths()} Months</div>
-            </div>
-          </div>
-            <motion.div
-            className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
-            whileHover={{
-              scale: 1.1
-            }}
-            whileTap={{
-              scale: 0.9
-            }}
-            >
-              Apply
-          </motion.div>
-      </DialogContent>
-    </Dialog>
-  )
-
-}
 
 function NewInvestmentDialog() {
 
@@ -302,7 +210,7 @@ function unixToDate(timestamp: number) {
 
 export default function Dashboard() {
 
-  const [currUserData, setCurrUserData] = useState<userType | null>(null)
+  const [userData, setUserData] = useState<userType | null>(null)
   const [userUSDCBal, setUserUSDCBal] = useState<number | null>(null)
   const [userETHBal, setUserETHBal] = useState<number | null>(null)
 
@@ -314,7 +222,7 @@ export default function Dashboard() {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
-        resp.json().then((json) => setCurrUserData(json))
+        resp.json().then((json) => setUserData(json))
       }
     })
 
@@ -345,28 +253,28 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    console.log(JSON.stringify(currUserData))
-  }, [currUserData])
+    console.log(JSON.stringify(userData))
+  }, [userData])
 
   return (
     <div className="flex flex-col min-h-screen w-screen bg-[#EFF8FC] items-center">
       <Header userLoggedIn={true}/>
       <div className="flex-grow p-12 w-full">
         <div className="flex flex-col space-y-8 w-full">
-          <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {currUserData?.firstName}!</div>
+          <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {userData?.firstName}!</div>
           <div className="flex flex-col space-y-5 px-10">
             <div className="font-semibold text-black text-4xl">Total Balance</div>
             <div className="flex flex-row justify-start items-center space-x-5">
               <div className="font-bold text-black text-6xl">{userUSDCBal?.toLocaleString()} USDC</div>
               <div className="flex justify-center items-center size-3 bg-black rounded-full"/>
               <div className="font-bold text-black text-6xl">{userETHBal?.toLocaleString()} ETH</div>
-              <AddFundsDialog walletAddress={currUserData?.walletAddress} />
+              <AddFundsDialog walletAddress={userData?.walletAddress} />
             </div>
           </div>
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
           <div className="flex flex-row justify-between px-10">
             <div className="text-black text-3xl font-bold">Recent Loans</div>
-            <NewLoanApplicationDialog />
+            <NewLoanApplicationDialog userData={userData} userETHBal={5000}/>
           </div>
           <div className="flex justify-center">
             <LoanInfoCarousel />

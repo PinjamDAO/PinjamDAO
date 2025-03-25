@@ -12,22 +12,21 @@ import { ISuccessResult } from "@worldcoin/idkit-core";
 function Slogan() {
   
   const keywords = ['Simple', 'Secure', 'Swift']
-  const duration = 3000
+  const duration = 5000
   const [currKeywordIndex, setCurrKeywordIndex] = useState(0)
-  const [trigger, setTrigger] = useState(false)
 
-  const interval = setInterval(() => {
+  setInterval(() => {
     setCurrKeywordIndex((currKeywordIndex + 1) % keywords.length);
   }, duration)
 
   return (
-    <div className="text-black text-[5rem] font-extrabold text-right">
+    <div className="text-black text-[6rem] font-extrabold text-right">
       <h1 className="">Microloans</h1>
       <h1 className="">Made</h1>
       <AnimatePresence mode="wait">
         <motion.div
         key={currKeywordIndex}
-        className="text-[#6E61E3]"
+        className="text-[#5202DB]"
         variants={{
           
         }}
