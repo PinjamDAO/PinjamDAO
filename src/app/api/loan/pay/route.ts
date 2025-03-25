@@ -55,6 +55,8 @@ async function createJob(totalDue: string, user: userType) {
 // pay your loan
 export async function POST(request: Request) {
     const user = await getCurrentUser()
+    const data = await request.json()
+
     if (user === null) {
         return NextResponse.json({
             'msg': 'not log in'
@@ -68,16 +70,28 @@ export async function POST(request: Request) {
     // todo: Figure out what the fuck is this
     const totalDue = loanDetails.totalDue
 
-    if (parseFloat(usdcBalance) < Number(totalDue)) {
-        return NextResponse.json({
-            'msg': 'Not enough to repay load'
-        }, { status: 402 })
-    }
+    // well you know the drill, dumbass chua didnt include amount as a optional parameter hahahahhaa
+    let sendAmount = totalDue
+    if (data.amount !== undefined) {
+        if (parseFloat(data.amount) === 0) {
+            return NextResponse.json({
+                'msg': 'Cant repay loan with 0 USDC'
+            }, { status: 402 })
+        }
 
-    // pay loan
-    // everything below here should be dispatched as a job, but im too fucking lazy
-    // transfer to main wallet
-    // transfer from circle wallet, to personal wallet
+        if (parseFloat(data.amount) > parseFloat(usdcBalance)) {
+            return NextResponse.json({
+                'msg': 'Not enough funds in wallet'
+            }, { status: 402 })
+        }
+        sendAmount = data.amount
+    } else {
+        if (parseFloat(usdcBalance) < Number(totalDue)) {
+            return NextResponse.json({
+                'msg': 'Not enough to repay load'
+            }, { status: 402 })
+        }
+    }
     
     createJob(totalDue, user);
     return NextResponse.json({})

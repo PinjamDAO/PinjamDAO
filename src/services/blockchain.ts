@@ -95,10 +95,8 @@ export async function getActiveLoan() {
 export async function getCollateralValue(amount: string) {
     const microLoan = await connectToMicroloan()
     const weiValue = ethers.parseEther(amount) // this is in wei
-    // const gweiValue = (Number(weiValue) / (10 ** 9)).toFixed(8)
-    // console.log(gweiValue)
     const usdcValue = await microLoan.getCollateralValue(weiValue)
-    return ethers.formatUnits(usdcValue, 6) // ??? idk man
+    return ethers.formatUnits(usdcValue, 6)
 }
 
 export async function connectToUSDC() {
