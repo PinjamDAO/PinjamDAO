@@ -24,8 +24,6 @@ import { motion } from "motion/react";
 
 import { useQRCode } from 'next-qrcode';
 import { useEffect, useState } from "react";
-import { browser } from "process";
-import { set } from "mongoose";
 
 function LoanInfoCarousel() {
 
