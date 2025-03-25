@@ -1,7 +1,7 @@
 import tasks from "@/models/tasks";
 import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks";
 import { userType } from "@/models/users";
-import { depositCollateral, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
+import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
 import { getEthBalance } from "@/services/wallet";
@@ -86,6 +86,13 @@ export async function POST(request: Request) {
         }, { status: 402 })
     }
 
+    const loan = await getActiveLoan()
+    if (loan.active) {
+        return NextResponse.json({
+            'msg': 'Already have an active loan'
+        }, { status: 400 })
+    }
+
     let sendAmount = balance
     if (data.amount) {
         if (parseFloat(data.amount) > balanceFloat) {
@@ -94,6 +101,15 @@ export async function POST(request: Request) {
             }, { status: 402 })
         }
         sendAmount = data.amount
+    }
+
+    const loanAmount = await getCollateralValue(sendAmount)
+    const available = await getAvailableUSDC()
+
+    if (parseFloat(loanAmount) > parseFloat(available)) {
+        return NextResponse.json({
+            'msg': 'Not enough USDC funds in blockchain'
+        }, { status: 402 })
     }
 
     // circle complains if you want to transfer everything out

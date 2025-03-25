@@ -168,6 +168,11 @@ export async function depositCollateral(amount: string) {
     console.log(`Successfully deposited ${amount} ETH as collateral!`);
 }
 
+export async function getAvailableUSDC() {
+    const microLoan = await connectToMicroloan();
+    return ethers.formatUnits(await microLoan.availableUSDC(), 6);
+}
+
 export async function takeLoan(amount: string, receipianAddr: string) {
     // Get the signer
     const { provider, signer } = await connectToBlockchain()
@@ -176,34 +181,38 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
 
     // Get loan details
-    const loan = await microLoan.getActiveLoan(await getSessionID());
-    if (loan.active) {
-        console.error("You already have an active loan!");
-        return;
-    }
+    // checked in api
+    // const loan = await microLoan.getActiveLoan(await getSessionID());
+    // if (loan.active) {
+    //     console.error("You already have an active loan!");
+    //     return;
+    // }
 
-    if (loan.collateralAmount == 0) {
-        console.error("You must deposit collateral before taking a loan!");
-        return;
-    }
+    // err theoretically cannot happen
+    // blockchain fails if this happens anyways so
+    // if (loan.collateralAmount == 0) {
+    //     console.error("You must deposit collateral before taking a loan!");
+    //     return;
+    // }
 
     // Convert amount to wei (USDC has 6 decimals)
     // const amountInWei = ethers.parseUnits(amount, 6);
 
     // derek you are trolling me
-    const amountInWei = await getCollateralValue(ethers.formatEther(loan.collateralAmount))
-    console.log(`Collateral Amount: ${loan.collateralAmount} | USDC Loan Amount: ${amountInWei}`)
+    // const amountInWei = await getCollateralValue(ethers.formatEther(loan.collateralAmount))
+    // console.log(`Collateral Amount: ${loan.collateralAmount} | USDC Loan Amount: ${amountInWei}`)
 
     // Check available USDC
-    const availableUSDC = await microLoan.availableUSDC();
-    if (availableUSDC < amountInWei) {
-        console.error(`Insufficient USDC liquidity. Available: ${ethers.formatUnits(availableUSDC, 6)} USDC`);
-        return;
-    }
+    // TODO: check this in backend
+    // const availableUSDC = await microLoan.availableUSDC();
+    // if (availableUSDC < amountInWei) {
+    //     console.error(`Insufficient USDC liquidity. Available: ${ethers.formatUnits(availableUSDC, 6)} USDC`);
+    //     return;
+    // }
 
     // Take loan
     console.log(`Taking loan of ${amount} USDC...`);
-    const takeLoanTx = await microLoan.takeLoan(amountInWei, await getSessionID(), receipianAddr);
+    const takeLoanTx = await microLoan.takeLoan(await getSessionID(), receipianAddr);
     await takeLoanTx.wait();
     console.log(`Successfully borrowed ${amount} USDC!`);
     return amount
