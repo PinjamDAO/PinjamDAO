@@ -86,8 +86,18 @@ export async function POST(request: Request) {
         }, { status: 402 })
     }
 
+    let sendAmount = balance
+    if (data.amount) {
+        if (parseFloat(data.amount) > balanceFloat) {
+            return NextResponse.json({
+                'msg': 'Not enough funds in wallet'
+            }, { status: 402 })
+        }
+        sendAmount = data.amount
+    }
+
     // circle complains if you want to transfer everything out
     // balance = Number((balance - MIN).toFixed(18))
-    createJob(balance, data.addr, user)
+    createJob(sendAmount, data.addr, user)
     return NextResponse.json({ })
 }
