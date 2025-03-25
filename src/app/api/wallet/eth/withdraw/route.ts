@@ -3,6 +3,7 @@ import { userType } from "@/models/users"
 import { waitForTransaction } from "@/services/blockchain"
 import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
+import { extractBody } from "@/services/utils"
 import { getEthBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
@@ -45,8 +46,8 @@ async function createJob(user: userType, amount: string, receivAddr: string) {
 
 // withdraw collateral
 export async function POST( request: Request ) {
-    const data = await request.json()
     const user = await getCurrentUser()
+    const data = extractBody(request)
 
     if (user === null) {
         return NextResponse.json({

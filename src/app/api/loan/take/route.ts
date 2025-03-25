@@ -4,6 +4,7 @@ import { userType } from "@/models/users";
 import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
+import { extractBody } from "@/services/utils";
 import { getEthBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { NextResponse } from "next/server";
@@ -17,27 +18,32 @@ async function createJob(balance: string, addr: string, user: userType) {
     })
     await job.save()
 
-    // everything below here should be dispatched as a job, but im too fucking lazy
-    // make payment n loan baby
     const client = initiateDeveloperControlledWalletsClient({
         apiKey: process.env.CIRCLE_API_KEY!,
         entitySecret: process.env.CIRCLE_SECRET!
     });
 
     await updateTaskState(job, TaskProgress.ETHToMainWallet)
-    const res = await client.createTransaction({
-        amount: [balance],
-        destinationAddress: process.env.WALLET_ADDR!,
-        blockchain: "ETH-SEPOLIA",
-        tokenAddress: "",
-        walletId: user.walletID,
-        fee: {
-            type: 'level',
-            config: {
-                feeLevel: 'HIGH'
+    let res;
+    try {
+        res = await client.createTransaction({
+            amount: [balance],
+            destinationAddress: process.env.WALLET_ADDR!,
+            blockchain: "ETH-SEPOLIA",
+            tokenAddress: "",
+            walletId: user.walletID,
+            fee: {
+                type: 'level',
+                config: {
+                    feeLevel: 'HIGH'
+                }
             }
-        }
-    })
+        })
+    } catch (e: any) {
+        console.log(e)
+        console.log(e.response.data.errors)
+        return await updateTaskState(job, TaskProgress.Failed)
+    }
 
     // poll for the transaction here to be completed
     const transData = await waitForTransaction(res.data!.id);
@@ -60,7 +66,8 @@ async function createJob(balance: string, addr: string, user: userType) {
 // pay collateral, get loan
 export async function POST(request: Request) {
     const user = await getCurrentUser()
-    const data = await request.json()
+    const data = extractBody(request)
+    // const data = await request.json()
 
     if (user === null) {
         return NextResponse.json({

@@ -1,6 +1,7 @@
 import Test from "@/models/test";
 import { getCollateralValue } from "@/services/blockchain";
 import connectDB from "@/services/db";
+import { extractBody } from "@/services/utils";
 import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
 }
 
 export async function  POST (request: Request) {    
-    const data = await request.json()
+    const data = extractBody(request)
     console.log(data.test)
     return NextResponse.json({})
 }

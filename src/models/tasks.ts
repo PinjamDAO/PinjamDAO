@@ -5,10 +5,10 @@ export enum TaskType {
     PayLoan = 'PayLoan',
     GetLoan = 'GetLoan',
     WithdrawETH = 'WithdrawETH',
+    WithdrawDeposit = 'WithdrawDeposit'
 }
 
 export enum TaskProgress {
-    Done = 'Done',
     ETHToMainWallet = 'ETHToMainWallet',
     ETHToBlockchain = 'ETHToBlockchain',
     DepositCollateral = 'DepositCollateral',
@@ -20,6 +20,8 @@ export enum TaskProgress {
     RepayingCollateral = 'RepayingCollateral',
     WithdrawUSDC = 'WithdrawUSDC',
     RefundingCollateral = 'RefundingCollateral',
+
+    Done = 'Done',
     Failed = 'Failed',
     Started = 'Started',
 }

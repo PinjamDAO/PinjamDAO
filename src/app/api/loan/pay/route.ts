@@ -3,6 +3,7 @@ import { userType } from "@/models/users"
 import { getLoanDetails, repayLoan, sendCollateralToCircle, waitForTransaction } from "@/services/blockchain"
 import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
+import { extractBody } from "@/services/utils"
 import { getUSDCBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
@@ -22,23 +23,31 @@ async function createJob(totalDue: string, user: userType) {
     });
 
     await updateTaskState(job, TaskProgress.USDCToMainWallet)
-    const res = await client.createTransaction({
-        amount: [totalDue],
-        destinationAddress: process.env.WALLET_ADDR!,
-        blockchain: 'ETH-SEPOLIA',
-        tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
-        walletId: user.walletID,
-        fee: {
-            type: 'level',
-            config: {
-                feeLevel: 'HIGH'
+    let res;
+    try {
+        res = await client.createTransaction({
+            amount: [totalDue],
+            destinationAddress: process.env.WALLET_ADDR!,
+            blockchain: 'ETH-SEPOLIA',
+            tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
+            walletId: user.walletID,
+            fee: {
+                type: 'level',
+                config: {
+                    feeLevel: 'HIGH'
+                }
             }
-        }
-    })
+        })
+    } catch (e: any) {
+        console.log(e)
+        console.log(e.response.data.errors)
+        return await updateTaskState(job, TaskProgress.Failed)
+    }
+
     // you know what time it is, time to poll~~~
     const transData = await waitForTransaction(res.data!.id)
     if (transData?.transaction?.state !== "COMPLETE")
-        await updateTaskState(job, TaskProgress.Failed)
+        return await updateTaskState(job, TaskProgress.Failed)
 
     await updateTaskState(job, TaskProgress.RepayingLoan)
 
@@ -55,7 +64,8 @@ async function createJob(totalDue: string, user: userType) {
 // pay your loan
 export async function POST(request: Request) {
     const user = await getCurrentUser()
-    const data = await request.json()
+    const data = extractBody(request)
+    // const data = await request.json()
 
     if (user === null) {
         return NextResponse.json({

@@ -3,6 +3,7 @@ import { userType } from "@/models/users";
 import { connectToBlockchain, connectToMicroloan, depositUSDC, getLoanDetails, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
+import { extractBody } from "@/services/utils";
 import { getEthBalance, getUSDCBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { dataLength, ethers } from "ethers";
@@ -17,26 +18,32 @@ async function createJob(balance: string, user: userType) {
     })
     await job.save()
 
-    // transfer to main wallet
     const client = initiateDeveloperControlledWalletsClient({
         apiKey: process.env.CIRCLE_API_KEY!,
         entitySecret: process.env.CIRCLE_SECRET!
     });
 
     await updateTaskState(job, TaskProgress.USDCToMainWallet)
-    const res = await client.createTransaction({
-        amount: [balance],
-        destinationAddress: process.env.WALLET_ADDR!,
-        tokenAddress: process.env.USDC_CONTRACT_ADDRESS!, // turns out, they are the same thing
-        blockchain: "ETH-SEPOLIA",
-        walletId: user.walletID,
-        fee: {
-            type: 'level',
-            config: {
-                feeLevel: 'HIGH'
+    let res;
+    try {
+        res = await client.createTransaction({
+            amount: [balance],
+            destinationAddress: process.env.WALLET_ADDR!,
+            tokenAddress: process.env.USDC_CONTRACT_ADDRESS!, // turns out, they are the same thing
+            blockchain: "ETH-SEPOLIA",
+            walletId: user.walletID,
+            fee: {
+                type: 'level',
+                config: {
+                    feeLevel: 'HIGH'
+                }
             }
-        }
-    })
+        })
+    } catch (e: any) {
+        console.log(e)
+        console.log(e.response.data.errors)
+        return await updateTaskState(job, TaskProgress.Failed)
+    }
 
     // poll for the transaction here to be completed
     const transData = await waitForTransaction(res.data!.id);
@@ -54,7 +61,8 @@ async function createJob(balance: string, user: userType) {
 // send money for people to loan hehehaw
 export async function POST(request: Request) {
     const user = await getCurrentUser()
-    const data = await request.json()
+    const data = extractBody(request)
+    // const data = await request.json()
 
     if (user === null) {
         return NextResponse.json({
