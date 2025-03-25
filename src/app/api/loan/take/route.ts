@@ -94,7 +94,13 @@ export async function POST(request: Request) {
     }
 
     let sendAmount = balance
-    if (data.amount) {
+    if (data.amount !== undefined) {
+        if (parseFloat(data.amount) === 0) {
+            return NextResponse.json({
+                'msg': 'Cant take 0 USDC loan'
+            }, { status: 402 })
+        }
+
         if (parseFloat(data.amount) > balanceFloat) {
             return NextResponse.json({
                 'msg': 'Not enough funds in wallet'

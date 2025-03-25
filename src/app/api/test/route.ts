@@ -22,3 +22,9 @@ export async function GET(request: Request) {
         'res': await getCollateralValue('0.0001')
     })
 }
+
+export async function  POST (request: Request) {    
+    const data = await request.json()
+    console.log(data.test)
+    return NextResponse.json({})
+}

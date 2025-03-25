@@ -77,7 +77,13 @@ export async function POST(request: Request) {
     // balance = Number((balance - MIN).toFixed(6))
 
     let amountToSend = balance
-    if (data.amount) {
+    if (data.amount !== undefined) {
+        if (parseFloat(data.amount) === 0) {
+            return NextResponse.json({
+                'msg': 'Cant deposit 0 USDC'
+            }, { status: 402 })
+        }
+
         if (parseFloat(data.amount) > balanceFloat) {
             return NextResponse.json({
                 'msg': 'Not enough USDC funds in wallet'
