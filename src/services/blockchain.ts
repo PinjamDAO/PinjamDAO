@@ -90,6 +90,12 @@ export async function getActiveLoan() {
     return loan;
 }
 
+// get eth collateralValue
+export async function getCollateralValue(amount: string) {
+    const microLoan = await connectToMicroloan()
+    return await microLoan.getCollateralValue(ethers.parseUnits(amount, "gwei"))
+}
+
 export async function connectToUSDC() {
     const { provider, signer } = await connectToBlockchain()
     return new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer)
@@ -177,7 +183,10 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     }
 
     // Convert amount to wei (USDC has 6 decimals)
-    const amountInWei = ethers.parseUnits(amount, 6);
+    // const amountInWei = ethers.parseUnits(amount, 6);
+    // derek you are trolling me
+    const amountInWei = await microLoan.getCollateralValue(loan.collateralAmount)
+    console.log(`Collateral Amount: ${loan.collateralAmount} | USDC Loan Amount: ${amountInWei}`)
 
     // Check available USDC
     const availableUSDC = await microLoan.availableUSDC();
@@ -209,10 +218,10 @@ export async function getLoanHistory() {
         const res = {
             loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
             collateralAmount: ethers.formatEther(loan.collateralAmount), // in eth
-            startTime: Number(loan.startTime),
-            endTime: Number(loan.endTime),
+            startTime: new Date(Number(loan.startTime) * 1000), // milisecond
+            endTime: new Date(Number(loan.endTime) * 1000),
             totalRepaid: ethers.formatUnits(loan.totalRepaid, 6),
-            closedTime: Number(loan.closedTime)
+            closedTime: new Date(Number(loan.closedTime) * 1000)
         }
 
         ret.push(res)
@@ -233,8 +242,8 @@ export async function getLoanDetails() {
     const res = {
         loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
         collateralAmount: ethers.formatEther(loan.collateralAmount), // in eth
-        startTime: Number(loan.startTime),
-        endTime: Number(loan.endTime),
+        startTime: new Date(Number(loan.startTime) * 1000),
+        endTime: new Date(Number(loan.endTime) * 1000),
         active: loan.active,
         liquidated: loan.liquidated,
         interest: ethers.formatUnits(loan.interest, 6),
