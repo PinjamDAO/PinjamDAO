@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Switch } from "../ui/switch";
+import { redirect } from "next/navigation";
 
 function LoanInvestmentSwitch() {
 
@@ -21,6 +21,20 @@ function LoanInvestmentSwitch() {
 
 function ProfilePicDropdown() {
 
+  const logOut = async () => {
+
+    console.log("log out clicked")
+
+    const response = await fetch('/api/session', {
+      method: 'DELETE',
+    })
+
+    if (response.ok) {
+      redirect('/')
+    }
+
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
@@ -31,7 +45,7 @@ function ProfilePicDropdown() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem>Log Out</DropdownMenuItem>
+        <DropdownMenuItem onClick={logOut}>Log Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
