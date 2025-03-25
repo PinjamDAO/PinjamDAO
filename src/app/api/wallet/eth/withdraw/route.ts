@@ -7,7 +7,7 @@ import { getEthBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
 
-async function createJob(user: userType, amount: number, receivAddr: string) {
+async function createJob(user: userType, amount: string, receivAddr: string) {
     await connectDB()
 
     const job = await Task.create({
@@ -23,7 +23,7 @@ async function createJob(user: userType, amount: number, receivAddr: string) {
 
     await updateTaskState(job, TaskProgress.RefundingCollateral)
     const res = await client.createTransaction({
-        amount: [amount.toString()],
+        amount: [amount],
         destinationAddress: receivAddr,
         blockchain: "ETH-SEPOLIA",
         tokenAddress: "",
@@ -61,17 +61,20 @@ export async function POST( request: Request ) {
         
     
     let balance = await getEthBalance(user.walletAddress)
+    let balanceFloat = parseFloat(balance)
 
     const MIN = 0.000000000000000001
 
     // check eth balance, if 0, ask user to fuck off
-    if (balance <= MIN) { // minimum wallet must have 0.000000000000000001, dont ask me, ask circle wallet
+    if (balanceFloat <= 0) {
+    // if (balance <= MIN) { // minimum wallet must have 0.000000000000000001, dont ask me, ask circle wallet
         return NextResponse.json({
             'msg': 'Nothing in wallet'
         }, { status: 402 })
     }
 
-    if (data.amount > balance - MIN) {
+    if (data.amount > balanceFloat) {
+    // if (data.amount > balance - MIN) {
         return NextResponse.json({
             'msg': 'Not enough in wallet'
         }, { status: 400 })

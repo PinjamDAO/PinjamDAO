@@ -16,6 +16,8 @@ export enum TaskProgress {
     USDCToBlockchain = 'USDCToBlockchain',
     USDCToMainWallet = 'USDCToMainWallet',
     USDCToUserWallet = 'USDCToUserWallet',
+    RepayingLoan = 'RepayingLoan',
+    RepayingCollateral = 'RepayingCollateral',
     WithdrawUSDC = 'WithdrawUSDC',
     RefundingCollateral = 'RefundingCollateral',
     Failed = 'Failed',

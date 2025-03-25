@@ -11,6 +11,6 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-        usdc: await getUSDCBalance(user.walletAddress)
+        usdc: parseFloat(await getUSDCBalance(user.walletAddress))
     })
 }

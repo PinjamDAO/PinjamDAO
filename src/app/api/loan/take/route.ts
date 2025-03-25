@@ -8,7 +8,7 @@ import { getEthBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { NextResponse } from "next/server";
 
-async function createJob(balance: number, addr: string, user: userType) {
+async function createJob(balance: string, addr: string, user: userType) {
     await connectDB()
 
     const job = await Task.create({
@@ -26,7 +26,7 @@ async function createJob(balance: number, addr: string, user: userType) {
 
     await updateTaskState(job, TaskProgress.ETHToMainWallet)
     const res = await client.createTransaction({
-        amount: [balance.toString()],
+        amount: [balance],
         destinationAddress: process.env.WALLET_ADDR!,
         blockchain: "ETH-SEPOLIA",
         tokenAddress: "",
@@ -46,10 +46,10 @@ async function createJob(balance: number, addr: string, user: userType) {
 
     await updateTaskState(job, TaskProgress.DepositCollateral)
     // oh boy oh boy time to interact with blockchain!@!!!!
-    await depositCollateral(balance.toString())
+    await depositCollateral(balance)
 
     await updateTaskState(job, TaskProgress.SendingLoan)
-    const amount = await takeLoan(balance.toString(), addr)
+    const amount = await takeLoan(balance, addr)
 
     if (amount === undefined)
         return await updateTaskState(job, TaskProgress.Failed)
@@ -74,18 +74,20 @@ export async function POST(request: Request) {
         }, { status: 401 })
 
     let balance = await getEthBalance(user.walletAddress)
+    let balanceFloat = parseFloat(balance)
 
     const MIN = 0.000000000000000001
 
     // check eth balance, if 0, ask user to fuck off
-    if (balance <= MIN) { // minimum wallet must have 0.000000000000000001, dont ask me, ask circle wallet
+    if (balanceFloat <= 0) {
+    // if (balance <= MIN) { // minimum wallet must have 0.000000000000000001, dont ask me, ask circle wallet
         return NextResponse.json({
             'msg': 'Nothing in wallet'
         }, { status: 402 })
     }
 
     // circle complains if you want to transfer everything out
-    balance = Number((balance - MIN).toFixed(18))
+    // balance = Number((balance - MIN).toFixed(18))
     createJob(balance, data.addr, user)
     return NextResponse.json({ })
 }

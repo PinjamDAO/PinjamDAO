@@ -62,7 +62,7 @@ function ApplyForLoan() {
             }}>Refresh money count</button>
             <div>Heads up, ALL of these will be transfered to be loaned, hehehaw</div>
             <div>Also, put your destination addr here</div>
-            <input className="bg-white text-black" onChange={
+            <input className="bg-black text-white" onChange={
                 (val) => {
                     setrecvAddr(val.target.value)
                 }
@@ -123,7 +123,7 @@ function DisplayLoanDetails (props: any) {
                         console.log(err)
                     })
                 }
-            } className="bg-white text-black">Repay your loan</button>
+            } className="bg-black text-white">Repay your loan</button>
             <div>Wallet Stats for Nerds</div>
             <div>{moneyCount.toFixed(6)} USDC</div>
             <button onClick={async () => {

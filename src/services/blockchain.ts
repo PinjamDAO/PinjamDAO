@@ -91,9 +91,14 @@ export async function getActiveLoan() {
 }
 
 // get eth collateralValue
+// abandon because THIS SUCKS
 export async function getCollateralValue(amount: string) {
     const microLoan = await connectToMicroloan()
-    return await microLoan.getCollateralValue(ethers.parseUnits(amount, "gwei"))
+    const weiValue = ethers.parseEther(amount) // this is in wei
+    // const gweiValue = (Number(weiValue) / (10 ** 9)).toFixed(8)
+    // console.log(gweiValue)
+    const usdcValue = await microLoan.getCollateralValue(weiValue)
+    return ethers.formatUnits(usdcValue, 6) // ??? idk man
 }
 
 export async function connectToUSDC() {
@@ -184,8 +189,9 @@ export async function takeLoan(amount: string, receipianAddr: string) {
 
     // Convert amount to wei (USDC has 6 decimals)
     // const amountInWei = ethers.parseUnits(amount, 6);
+
     // derek you are trolling me
-    const amountInWei = await microLoan.getCollateralValue(loan.collateralAmount)
+    const amountInWei = await getCollateralValue(ethers.formatEther(loan.collateralAmount))
     console.log(`Collateral Amount: ${loan.collateralAmount} | USDC Loan Amount: ${amountInWei}`)
 
     // Check available USDC

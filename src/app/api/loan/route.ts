@@ -8,12 +8,12 @@ import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-
 import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 
-async function createJob(balance: number, user: userType) {
+async function createJob(balance: string, user: userType) {
     await connectDB()
 
     const job = await Task.create({
         userId: user.worldId,
-        TaskType: TaskType.SendUSDC
+        taskType: TaskType.SendUSDC
     })
     await job.save()
 
@@ -25,7 +25,7 @@ async function createJob(balance: number, user: userType) {
 
     await updateTaskState(job, TaskProgress.USDCToMainWallet)
     const res = await client.createTransaction({
-        amount: [balance.toString()],
+        amount: [balance],
         destinationAddress: process.env.WALLET_ADDR!,
         tokenAddress: process.env.USDC_CONTRACT_ADDRESS!, // turns out, they are the same thing
         blockchain: "ETH-SEPOLIA",
@@ -46,7 +46,7 @@ async function createJob(balance: number, user: userType) {
 
     await updateTaskState(job, TaskProgress.USDCToBlockchain)
     // throw from wallet to blockchain
-    await depositUSDC(balance.toString())
+    await depositUSDC(balance)
 
     await updateTaskState(job, TaskProgress.Done)
 }
@@ -61,16 +61,18 @@ export async function POST(request: Request) {
     }
 
     // circle wallet -> our own wallet
-    const MIN = 0.000001
+    // const MIN = 0.000001
     let balance = await getUSDCBalance(user.walletAddress)
+    let balanceFloat = parseFloat(balance)
 
     // check usdc balance, if 0, ask user to fuck off
-    if (balance <= MIN) {
+    if (balanceFloat <= 0) {
+    // if (balance <= MIN) {
         return NextResponse.json({
             'msg': 'Nothing in wallet'
         }, { status: 402 })
     }
-    balance = Number((balance - MIN).toFixed(6))
+    // balance = Number((balance - MIN).toFixed(6))
 
     createJob(balance, user)
     return NextResponse.json({})

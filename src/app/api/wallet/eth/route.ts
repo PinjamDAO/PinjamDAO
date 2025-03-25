@@ -1,3 +1,4 @@
+import { getCollateralValue } from "@/services/blockchain"
 import { getCurrentUser } from "@/services/session"
 import { getEthBalance } from "@/services/wallet"
 import { NextResponse } from "next/server"
@@ -10,7 +11,9 @@ export async function GET(request: Request) {
         }, { status: 401 })
     }
 
+    const amount = await getEthBalance(user.walletAddress)
     return NextResponse.json({
-        eth: await getEthBalance(user.walletAddress)
+        eth: parseFloat(amount),
+        canLoan: parseFloat(await getCollateralValue(amount))
     })
 }
