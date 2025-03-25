@@ -93,6 +93,6 @@ export async function POST(request: Request) {
         }
     }
     
-    createJob(totalDue, user);
+    createJob(sendAmount, user);
     return NextResponse.json({})
 }
