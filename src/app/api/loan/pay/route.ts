@@ -65,9 +65,6 @@ export async function POST(request: Request) {
 
     const loanDetails = await getLoanDetails()
     const usdcBalance = await getUSDCBalance(user.walletAddress)
-
-    // convert to wei (what the fuck is wei)
-    // todo: Figure out what the fuck is this
     const totalDue = loanDetails.totalDue
 
     // well you know the drill, dumbass chua didnt include amount as a optional parameter hahahahhaa
