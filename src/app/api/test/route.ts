@@ -5,9 +5,12 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
     await connectDB();
 
-    (await Test.create({
+    const test = await Test.create({
         'msg': 'tthis is a test'
-    })).save()
+    })
+    await test.save()
+    test.msg = "updated msg"
+    await test.save()
 
     return NextResponse.json({
         "msg": 'Ok'
