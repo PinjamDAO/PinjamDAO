@@ -5,7 +5,7 @@ import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
 import { getEthBalance, getUSDCBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
-import { ethers } from "ethers";
+import { dataLength, ethers } from "ethers";
 import { NextResponse } from "next/server";
 
 async function createJob(balance: string, user: userType) {
@@ -54,6 +54,8 @@ async function createJob(balance: string, user: userType) {
 // send money for people to loan hehehaw
 export async function POST(request: Request) {
     const user = await getCurrentUser()
+    const data = await request.json()
+
     if (user === null) {
         return NextResponse.json({
             'msg': 'not log in'
@@ -74,7 +76,17 @@ export async function POST(request: Request) {
     }
     // balance = Number((balance - MIN).toFixed(6))
 
-    createJob(balance, user)
+    let amountToSend = balance
+    if (data.amount) {
+        if (parseFloat(data.amount) > balanceFloat) {
+            return NextResponse.json({
+                'msg': 'Not enough USDC funds in wallet'
+            }, { status: 402 })
+        }
+        amountToSend = data.amount
+    }
+    
+    createJob(amountToSend, user)
     return NextResponse.json({})
 }
 

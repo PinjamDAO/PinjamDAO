@@ -180,8 +180,7 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
 
-    // Get loan details
-    // checked in api
+    // Get loan details checked in api
     // const loan = await microLoan.getActiveLoan(await getSessionID());
     // if (loan.active) {
     //     console.error("You already have an active loan!");
@@ -202,8 +201,7 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     // const amountInWei = await getCollateralValue(ethers.formatEther(loan.collateralAmount))
     // console.log(`Collateral Amount: ${loan.collateralAmount} | USDC Loan Amount: ${amountInWei}`)
 
-    // Check available USDC
-    // TODO: check this in backend
+    // Check available USDC, alraedy checked in api
     // const availableUSDC = await microLoan.availableUSDC();
     // if (availableUSDC < amountInWei) {
     //     console.error(`Insufficient USDC liquidity. Available: ${ethers.formatUnits(availableUSDC, 6)} USDC`);
