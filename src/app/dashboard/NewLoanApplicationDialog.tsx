@@ -7,21 +7,17 @@ import Dropdown from "@/components/Dropdown"
 
 export default function NewLoanApplicationDialog({ userData, userETHBal }: { userData: userType | null, userETHBal: number | null }) {
 
+  const annualInterest = 15
+  const repaymentDurationMonths = 6
   const [open, setOpen] = useState(false)
   const [borrowAmount, setBorrowAmount] = useState(0)
   const [collateralAmountETH, setCollateralAmountETH] = useState(0)
-
   const [ETHToUSDPrice, setETHToUSDPrice] = useState(0)
-
-  const annualInterest = 15
-  const repaymentDurationMonths = 6
-
   const [selectedPurpose, setSelectedPurpose] = useState('')
   const [applicationStatus, setApplicationStatus] = useState<boolean | null>(null)
-
   const [userPublicAddress, setUserPublicAddress] = useState('')
-
   const [loanSuccess, setLoanSuccess] = useState(false)
+  const [maxLoanableAmount, setMaxLoanableAmount] = useState(0)
 
   const loanPurposes = [
     'Property',
@@ -39,7 +35,18 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
       method: 'GET',
     }).then((resp) => {
       if (resp.ok) {
-        return resp.json().then((json) => setETHToUSDPrice(json[0].price.price * Math.pow(10, json[0].price.expo)))
+        resp.json().then((json) => setETHToUSDPrice(json[0].price.price * Math.pow(10, json[0].price.expo)))
+      }
+    })
+
+    fetch('/api/loan', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => {
+          console.log(json)
+          setMaxLoanableAmount(json.available)
+        })
       }
     })
 
@@ -101,8 +108,6 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
       TotalLoanCollatoralAmount: borrowAmount // USDC, not ETH
     }
 
-    console.log(body)
-
     fetch('http://localhost:5000/predict', {
       method: 'POST',
       headers: {
@@ -119,10 +124,12 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
 
   const confirmLoan = () => {
 
+    // always returns 200
     fetch('/api/loan/take', {
-      method: 'GET',
+      method: 'POST',
       body: JSON.stringify({
-        amount: collateralAmountETH.toString()
+        amount: collateralAmountETH.toString(),
+        addr: userPublicAddress
       })
     }).then((resp) => {
       if (resp.ok) {
@@ -146,7 +153,9 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
     if (userETHBal === null || 
       collateralAmountETH + 0.000000000000000001 > userETHBal ||
       selectedPurpose === '' ||
-      borrowAmount === 0) {
+      borrowAmount === 0 ||
+      borrowAmount > maxLoanableAmount
+    ) {
       return ('bg-[#afa3c4]')
     } 
 
@@ -165,7 +174,8 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
       collateralAmountETH + 0.000000000000000001 > userETHBal || 
       applicationStatus !== null ||
       selectedPurpose === '' ||
-      borrowAmount === 0
+      borrowAmount === 0 ||
+      borrowAmount > maxLoanableAmount
     ) {
       return (true)
     }
@@ -176,7 +186,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
 
     if (userETHBal === null || collateralAmountETH + 0.000000000000000001 > userETHBal) {
       return ('Insufficient Collateral in Wallet')
-    } 
+    }
 
     if (applicationStatus === false) {
       return ('Loan Application Rejected')
@@ -188,7 +198,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
       return ('Purpose not selected')
     }
 
-    if (borrowAmount === 0) {
+    if (borrowAmount === 0 || borrowAmount > maxLoanableAmount) {
       return ('Cannot borrow specified amount')
     }
 
@@ -282,6 +292,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
                     onChange={(e) => setUserPublicAddress(e.target.value)} />
                 </div>
                 <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 "/>
+                
                 <motion.button
                 className={`flex items-center justify-center min-w-48 h-12 bg-[#5202DB] rounded-lg text-white
                 font-semibold text-lg cursor-pointer select-none px-5 transition-colors

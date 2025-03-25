@@ -19,13 +19,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
-import Image from "next/image";
 import { motion } from "motion/react";
 
 import { useQRCode } from 'next-qrcode';
 import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
 import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
+import NewDepositDialog from "./NewDepositDialog";
 
 function LoanInfoCarousel() {
 
@@ -80,7 +80,8 @@ function AddFundsDialog({ walletAddress }: { walletAddress: string | undefined }
     <Dialog>
       <DialogTrigger>
         <motion.div
-          className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold text-4xl text-center cursor-pointer select-none"
+          className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold
+          text-4xl text-center cursor-pointer select-none"
           whileHover={{
             scale: 1.1
           }}
@@ -118,83 +119,6 @@ function AddFundsDialog({ walletAddress }: { walletAddress: string | undefined }
 
 }
 
-
-
-function NewInvestmentDialog() {
-
-  const [depositAmount, setDepositAmount] = useState(0)
-
-  const duration = 7
-  const annualInterest = 14
-
-  const getDepositDuration = () => {
-    return (duration)
-  }
-
-  const getMaxPossibleInterest = () => {
-    return (annualInterest)
-  }
-
-  return(
-    <Dialog>
-      <DialogTrigger>
-        <motion.div
-          className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
-          whileHover={{
-            scale: 1.1
-          }}
-          whileTap={{
-            scale: 0.9
-          }}
-          >
-            New Fixed Deposit
-        </motion.div>
-      </DialogTrigger>
-      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
-        <DialogHeader>
-          <DialogTitle className="font-bold text-4xl text-black pt-5">New Fixed Deposit</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col space-y-3">
-            <div className="flex text-black font-semibold text-2xl pl-2">I want to deposit</div>
-            <div className="flex flex-row justify-center items-center bg-white w-96 h-16 px-5
-            rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-black font-semibold text-2xl">
-              <input className="flex w-72 h-16 p-2 focus:outline-0" type="number" onChange={(e) => setDepositAmount(Number(e.target.value))}/>
-              <div className="">USDC</div>
-            </div>
-          </div>
-          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
-          <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
-            <div className="flex text-black font-bold text-3xl">Deposit Details</div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Amount to deposit:</div>
-              <div>{depositAmount} USDC</div>
-            </div>
-            <div className="flex flex-row justify-between items-center">
-              <div>Deposit Duration:</div>
-              <div>{getDepositDuration()} Days</div>
-            </div>
-            <div className="flex flex-row justify-between items-center">
-              <div className="w-[75%]">Maximum Obtainable Interest (annual):</div>
-              <div>{getMaxPossibleInterest()}%</div>
-            </div>
-          </div>
-            <motion.div
-            className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
-            whileHover={{
-              scale: 1.1
-            }}
-            whileTap={{
-              scale: 0.9
-            }}
-            >
-              Deposit
-          </motion.div>
-      </DialogContent>
-    </Dialog>
-  )
-
-}
-
 type LoanHistory = {
   "loanAmount": string,
   "collateralAmount": string,
@@ -202,10 +126,6 @@ type LoanHistory = {
   "endTime": Date,
   "totalRepaid": string,
   "closedTime": Date
-}
-
-function unixToDate(timestamp: number) {
-  return (new Date(timestamp * 1000))
 }
 
 export default function Dashboard() {
@@ -273,7 +193,7 @@ export default function Dashboard() {
           </div>
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
           <div className="flex flex-row justify-between px-10">
-            <div className="text-black text-3xl font-bold">Recent Loans</div>
+            <div className="text-black text-3xl font-bold">Ongoing Loans</div>
             <NewLoanApplicationDialog userData={userData} userETHBal={5000}/>
           </div>
           <div className="flex justify-center">
@@ -296,14 +216,13 @@ export default function Dashboard() {
 
               <div className="flex flex-row justify-between">
                 <div className="text-black text-3xl font-bold">Investments</div>
-                <NewInvestmentDialog />
+                <NewDepositDialog userUSDCBal={5000}/>
               </div>
               <div className="space-y-5">
                 
               </div>
 
-
-              <div className="text-black text-3xl font-bold">Credit Standing</div>
+              {/* <div className="text-black text-3xl font-bold">Credit Standing</div>
               <div className="space-y-10">
                 <div className="flex flex-col space-y-2">
                   <div className="font-semibold text-xl">Loan Frequency</div>
@@ -321,7 +240,8 @@ export default function Dashboard() {
                   <div className="font-semibold text-xl">Loan History</div>
                   <Progress value={45} className="h-4"/> 
                 </div>
-              </div>
+              </div> */}
+              
             </div>
 
 
