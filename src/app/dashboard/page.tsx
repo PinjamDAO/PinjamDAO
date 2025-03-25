@@ -50,21 +50,25 @@ function LoanInfoCarousel() {
 
 }
 
-function HistoryCard() {
+function HistoryCard({title, subtitle, amount}: {title: string, subtitle: string, amount: number}) {
   return (
-    <div className="flex flex-row justify-between h-24 px-5">
+    <div className="flex flex-row justify-between h-24 px-5 hover:bg-gray-200 rounded-lg transition-all select-none">
       <div className="flex flex-row space-x-5">
         <div className="flex items-center justify-center">
           <div className="size-16 bg-amber-400 rounded-full"></div>
         </div>
         <div className="flex flex-col space-y-2 justify-center">
-          <div className="font-semibold text-2xl">Title</div>
-          <div className="font-base text-xl">Subtitle</div>
+          <div className="font-semibold text-2xl">{title}</div>
+          <div className="font-base text-xl">{subtitle}</div>
         </div>
       </div>
-      <div className="flex flex-col justify-center font-semibold text-2xl">Amount</div>
+      <div className="flex flex-col justify-center font-semibold text-2xl">{amount ? amount + ' USDC': ''}</div>
     </div>
   )
+
+}
+
+function InvestmentCard() {
 
 }
 
@@ -208,6 +212,82 @@ function NewLoanApplicationDialog() {
 
 }
 
+function NewInvestmentDialog() {
+
+  const [depositAmount, setDepositAmount] = useState(0)
+
+  const duration = 7
+  const annualInterest = 14
+
+  const getDepositDuration = () => {
+    return (duration)
+  }
+
+  const getMaxPossibleInterest = () => {
+    return (annualInterest)
+  }
+
+  return(
+    <Dialog>
+      <DialogTrigger>
+        <motion.div
+          className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
+          whileHover={{
+            scale: 1.1
+          }}
+          whileTap={{
+            scale: 0.9
+          }}
+          >
+            New Fixed Deposit
+        </motion.div>
+      </DialogTrigger>
+      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
+        <DialogHeader>
+          <DialogTitle className="font-bold text-4xl text-black pt-5">New Fixed Deposit</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col space-y-3">
+            <div className="flex text-black font-semibold text-2xl pl-2">I want to deposit</div>
+            <div className="flex flex-row justify-center items-center bg-white w-96 h-16 px-5
+            rounded-lg inset-shadow-sm inset-shadow-indigo-200 text-black font-semibold text-2xl">
+              <input className="flex w-72 h-16 p-2 focus:outline-0" type="number" onChange={(e) => setDepositAmount(Number(e.target.value))}/>
+              <div className="">USDC</div>
+            </div>
+          </div>
+          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
+          <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
+            <div className="flex text-black font-bold text-3xl">Deposit Details</div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Amount to deposit:</div>
+              <div>{depositAmount} USDC</div>
+            </div>
+            <div className="flex flex-row justify-between items-center">
+              <div>Deposit Duration:</div>
+              <div>{getDepositDuration()} Days</div>
+            </div>
+            <div className="flex flex-row justify-between items-center">
+              <div className="w-[75%]">Maximum Obtainable Interest (annual):</div>
+              <div>{getMaxPossibleInterest()}%</div>
+            </div>
+          </div>
+            <motion.div
+            className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
+            whileHover={{
+              scale: 1.1
+            }}
+            whileTap={{
+              scale: 0.9
+            }}
+            >
+              Deposit
+          </motion.div>
+      </DialogContent>
+    </Dialog>
+  )
+
+}
+
+
 
 export default function Dashboard() {
 
@@ -244,35 +324,45 @@ export default function Dashboard() {
             
             <div className="flex flex-col space-y-5 w-[45%]">
               <div className="text-black text-3xl font-bold">History</div>
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
-              <HistoryCard />
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>
-            <div className="flex flex-col space-y-5 w-[45%]">
+            <div className="flex flex-col w-[45%] space-y-8">
+
+              <div className="flex flex-row justify-between">
+                <div className="text-black text-3xl font-bold">Investments</div>
+                <NewInvestmentDialog />
+              </div>
+              <div className="space-y-5">
+                
+              </div>
+
+
               <div className="text-black text-3xl font-bold">Credit Standing</div>
-              <div className="flex flex-col space-y-2">
-                <div className="font-semibold text-xl">Loan Frequency</div>
-                <Progress value={10} className="h-4"/> 
-              </div>
-              <div className="flex flex-col space-y-2">
-                <div className="font-semibold text-xl">Loan Repayment</div>
-                <Progress value={30} className="h-4"/> 
-              </div>
-              <div className="flex flex-col space-y-2">
-                <div className="font-semibold text-xl">Loan Utilization</div>
-                <Progress value={90} className="h-4"/> 
-              </div>
-              <div className="flex flex-col space-y-2">
-                <div className="font-semibold text-xl">Loan History</div>
-                <Progress value={45} className="h-4"/> 
+              <div className="space-y-10">
+                <div className="flex flex-col space-y-2">
+                  <div className="font-semibold text-xl">Loan Frequency</div>
+                  <Progress value={10} className="h-4"/> 
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <div className="font-semibold text-xl">Loan Repayment</div>
+                  <Progress value={30} className="h-4"/> 
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <div className="font-semibold text-xl">Loan Utilization</div>
+                  <Progress value={90} className="h-4"/> 
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <div className="font-semibold text-xl">Loan History</div>
+                  <Progress value={45} className="h-4"/> 
+                </div>
               </div>
             </div>
 
