@@ -49,7 +49,8 @@ export function DatePicker({ date, setDate }: { date: Date, setDate: (d: Date) =
       onChange={(e) => {
         if (date && e.target.value !== '') {
           const newDate = new Date(date);
-          newDate.setMonth(Number(e.target.value));
+          console.log(e.target.value)
+          newDate.setMonth(Number(e.target.value) - 1);
           setDate(newDate);
         }
       }}

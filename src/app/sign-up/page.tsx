@@ -166,7 +166,7 @@ export default function SignUp() {
                 <div className="space-y-1">
                   <div className="text-xl pl-2">Identification Number</div>
                   <input className="bg-white text-black w-96 h-12 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200"
-                  name="idNumber" placeholder="xxxxxx-xx-xxxx"/>
+                  name="idNumber"/>
                 </div>
               </div>
 

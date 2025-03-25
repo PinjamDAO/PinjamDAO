@@ -24,6 +24,7 @@ import { motion } from "motion/react";
 
 import { useQRCode } from 'next-qrcode';
 import { useEffect, useState } from "react";
+import { userType } from "@/models/users";
 
 function LoanInfoCarousel() {
 
@@ -70,11 +71,9 @@ function InvestmentCard() {
 
 }
 
-function AddFundsDialog() {
+function AddFundsDialog({ walletAddress }: { walletAddress: string | undefined }) {
 
   const { Canvas } = useQRCode()
-
-  const addr = "address"
 
   return(
     <Dialog>
@@ -95,8 +94,9 @@ function AddFundsDialog() {
         <DialogHeader>
           <DialogTitle className="font-bold text-4xl text-black pt-5">Add money</DialogTitle>
         </DialogHeader>
-        <Canvas
-          text={addr}
+        {
+          walletAddress !== undefined ? <Canvas
+          text={walletAddress}
           options={{
             errorCorrectionLevel: 'M',
             margin: 1,
@@ -107,7 +107,9 @@ function AddFundsDialog() {
               light: '#EFF8FC',
             },
           }}
-        />
+        /> : "Loading..."
+        }
+        
         <div className="font-semibold text-xl px-10 text-center">Scan the QR Code with your crypto wallet such as Metamask.</div>
       </DialogContent>
     </Dialog>
@@ -289,25 +291,65 @@ function NewInvestmentDialog() {
 
 export default function Dashboard() {
 
-  const username = "User"
+  const [currUserData, setCurrUserData] = useState<userType | null>(null)
+  const [userUSDCBal, setUserUSDCBal] = useState<number | null>(null)
+  const [userETHBal, setUserETHBal] = useState<number | null>(null)
 
-  const usdcBalance = 10000
-  const ethBalance = 200
-  const currency = "USDC"
+  const [userLoanHistory, setUserLoanHistory] = useState<null>(null)
+
+  useEffect(() => {
+
+    fetch('/api/me', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setCurrUserData(json))
+      }
+    })
+
+    fetch('/api/wallet/eth', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setUserETHBal(json.eth))
+      }
+    })
+
+    fetch('/api/wallet/usdc', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setUserUSDCBal(json.usdc))
+      }
+    })
+
+    fetch('/api/me/loans', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setLoanHistory(json))
+      }
+    })
+
+  }, [])
+
+  useEffect(() => {
+    console.log(JSON.stringify(currUserData))
+  }, [currUserData])
 
   return (
     <div className="flex flex-col min-h-screen w-screen bg-[#EFF8FC] items-center">
       <Header userLoggedIn={true}/>
       <div className="flex-grow p-12 w-full">
         <div className="flex flex-col space-y-8 w-full">
-          <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {username}!</div>
+          <div className="px-10 mt-16 font-semibold text-black text-5xl">Welcome back, {currUserData?.firstName}!</div>
           <div className="flex flex-col space-y-5 px-10">
             <div className="font-semibold text-black text-4xl">Total Balance</div>
             <div className="flex flex-row justify-start items-center space-x-5">
-              <div className="font-bold text-black text-6xl">{usdcBalance.toLocaleString()} USDC</div>
+              <div className="font-bold text-black text-6xl">{userUSDCBal?.toLocaleString()} USDC</div>
               <div className="flex justify-center items-center size-3 bg-black rounded-full"/>
-              <div className="font-bold text-black text-6xl">{ethBalance.toLocaleString()} ETH</div>
-              <AddFundsDialog />
+              <div className="font-bold text-black text-6xl">{userETHBal?.toLocaleString()} ETH</div>
+              <AddFundsDialog walletAddress={currUserData?.walletAddress} />
             </div>
           </div>
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
@@ -322,14 +364,9 @@ export default function Dashboard() {
             
             <div className="flex flex-col space-y-5 w-[45%]">
               <div className="text-black text-3xl font-bold">History</div>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
-              <HistoryCard title="Loan Repayment" subtitle="Today" amount={500}/>
+              {/* {
+                userLoanHistory?.map((h, i) => <HistoryCard title="Took out a loan" subtitle="Today" amount={500}/>)
+              } */}
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>
             <div className="flex flex-col w-[45%] space-y-8">
