@@ -287,7 +287,18 @@ function NewInvestmentDialog() {
 
 }
 
+type LoanHistory = {
+  "loanAmount": string,
+  "collateralAmount": string,
+  "startTime": Date,
+  "endTime": Date,
+  "totalRepaid": string,
+  "closedTime": Date
+}
 
+function unixToDate(timestamp: number) {
+  return (new Date(timestamp * 1000))
+}
 
 export default function Dashboard() {
 
@@ -295,7 +306,7 @@ export default function Dashboard() {
   const [userUSDCBal, setUserUSDCBal] = useState<number | null>(null)
   const [userETHBal, setUserETHBal] = useState<number | null>(null)
 
-  const [userLoanHistory, setUserLoanHistory] = useState<null>(null)
+  const [userLoanHistory, setUserLoanHistory] = useState<LoanHistory[]>([])
 
   useEffect(() => {
 
@@ -327,7 +338,7 @@ export default function Dashboard() {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
-        resp.json().then((json) => setLoanHistory(json))
+        resp.json().then((json) => setUserLoanHistory(json))
       }
     })
 
@@ -364,9 +375,13 @@ export default function Dashboard() {
             
             <div className="flex flex-col space-y-5 w-[45%]">
               <div className="text-black text-3xl font-bold">History</div>
-              {/* {
-                userLoanHistory?.map((h, i) => <HistoryCard title="Took out a loan" subtitle="Today" amount={500}/>)
-              } */}
+              {
+                userLoanHistory?.map((h, i) => <HistoryCard 
+                  key={i}
+                  title="Took out a loan"
+                  subtitle={h.startTime.toLocaleDateString()}
+                  amount={Number(h.loanAmount)}/>)
+              }
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>
             <div className="flex flex-col w-[45%] space-y-8">
