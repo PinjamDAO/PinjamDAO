@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { useState, useEffect } from "react"
 import Dropdown from "@/components/Dropdown"
 
-export default function NewLoanApplicationDialog({ userData, userETHBal }: { userData: userType | null, userETHBal: number | null }) {
+export default function NewLoanApplicationDialog({ userData, userETHBal, maxLoanableAmount }: { userData: userType | null, userETHBal: number | null, maxLoanableAmount: number }) {
 
   const annualInterest = 15
   const repaymentDurationMonths = 6
@@ -16,8 +16,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
   const [selectedPurpose, setSelectedPurpose] = useState('')
   const [applicationStatus, setApplicationStatus] = useState<boolean | null>(null)
   const [userPublicAddress, setUserPublicAddress] = useState('')
-  const [loanSuccess, setLoanSuccess] = useState(false)
-  const [maxLoanableAmount, setMaxLoanableAmount] = useState(0)
+  const [loanSuccess, setLoanSuccess] = useState<boolean | null>(false)
 
   const loanPurposes = [
     'Property',
@@ -39,34 +38,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
       }
     })
 
-    fetch('/api/loan', {
-      method: 'GET'
-    }).then((resp) => {
-      if (resp.ok) {
-        resp.json().then((json) => {
-          console.log(json)
-          setMaxLoanableAmount(json.available)
-        })
-      }
-    })
-
   }, [])
-
-  // for testing purpose
-  const body = {
-    Age: 38,
-    BaseInterestRate: 0.091036,
-    EducationLevel: 'Master',
-    EmploymentStatus: 'Employed',
-    InstallmentDuration: 35,
-    InterestRate: 0.08791592829806896,
-    LoanAmount: 18971,
-    LoanCurrency: 'usdc',
-    LoanDuration: 48,
-    LoanPurpose: 'Debt Consolidation',
-    LoanStartDate: new Date('2018-01-05'),
-    TotalLoanCollatoralAmount: 1518
-  }
 
   // useeffect
 
@@ -122,6 +94,10 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
 
   }
 
+  useEffect(() => {
+    console.log(userPublicAddress)
+  }, [userPublicAddress])
+
   const confirmLoan = () => {
 
     // always returns 200
@@ -131,10 +107,6 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
         amount: collateralAmountETH.toString(),
         addr: userPublicAddress
       })
-    }).then((resp) => {
-      if (resp.ok) {
-        setLoanSuccess(true)
-      }
     })
   }
 
@@ -288,7 +260,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
                 <div className="text-xl w-[80%]">To take the loan, input the destination wallet address and press confirm.</div>
                 <div className="flex flex-col space-y-3">
                   <div className="flex text-black font-semibold text-2xl pl-2">My wallet's public address is</div>
-                  <input className="bg-white text-black font-semibold text-2xl w-96 h-16 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200 focus:outline-0"
+                  <input className="bg-white text-black font-medium text-md w-100 h-16 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200 focus:outline-0"
                     onChange={(e) => setUserPublicAddress(e.target.value)} />
                 </div>
                 <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 "/>
@@ -297,7 +269,7 @@ export default function NewLoanApplicationDialog({ userData, userETHBal }: { use
                 className={`flex items-center justify-center min-w-48 h-12 bg-[#5202DB] rounded-lg text-white
                 font-semibold text-lg cursor-pointer select-none px-5 transition-colors
                 ${userPublicAddress.length !== 0 ? 'bg-[#5202DB]' : 'bg-[#afa3c4]' }`}
-                disabled={getButtonDisabledBoolean()}
+                disabled={userPublicAddress.length === 0}
                 whileHover={userPublicAddress.length !== 0 ? { scale: 1.1 } : {}}
                 whileTap={userPublicAddress.length !== 0 ? { scale: 0.9 } : {}}
                 onClick={confirmLoan}

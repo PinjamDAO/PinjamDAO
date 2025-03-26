@@ -3,12 +3,12 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/
 import { motion } from "motion/react"
 import { useState } from "react"
 
-export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number}) {
+export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number | null}) {
 
   const [depositAmount, setDepositAmount] = useState(0)
   const [depositSuccess, setDepositSuccess] = useState<boolean | null>(null)
 
-  const duration = 7
+  const duration = 30
   const annualInterest = 14
 
   const getDepositDuration = () => {
@@ -38,7 +38,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number}
 
   const getButtonColour = () => {
 
-    if (userUSDCBal === null || userUSDCBal < depositAmount) {
+    if (userUSDCBal === null || userUSDCBal < depositAmount || depositAmount === 0) {
       return ('bg-[#afa3c4]')
     } 
 
@@ -53,7 +53,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number}
 
   const getButtonDisabledBoolean = () => {
 
-    if (userUSDCBal === null || userUSDCBal < depositAmount || depositSuccess !== null) {
+    if (userUSDCBal === null || userUSDCBal < depositAmount || depositSuccess !== null  || depositAmount === 0) {
       return (true)
     }
     return (false)
@@ -61,9 +61,12 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number}
 
   const getButtonLabel = () => {
 
-    if (userUSDCBal === null || userUSDCBal < depositAmount) {
+    if (userUSDCBal === null || userUSDCBal < depositAmount ) {
       return ('Insufficient Funds in Wallet')
     }
+
+    if (depositAmount === 0)
+      return ('Cannot deposit specified amount')
 
     if (depositSuccess === true) {
       return ('Deposit Success!')
@@ -118,8 +121,8 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number}
             </div>
           </div>
             <motion.button
-            className={`flex items-center justify-center w-48 h-12 rounded-lg text-white
-            font-semibold text-lg cursor-pointer select-none ${getButtonColour()}`}
+            className={`flex items-center justify-center min-w-48 h-12 px-5 rounded-lg text-white
+            font-semibold text-lg cursor-pointer select-none transition-colors ${getButtonColour()}`}
             disabled={getButtonDisabledBoolean()}
             whileHover={!getButtonDisabledBoolean() ? { scale: 1.1 } : {}}
             whileTap={!getButtonDisabledBoolean() ? { scale: 0.9 } : {}}

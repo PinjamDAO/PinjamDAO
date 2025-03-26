@@ -66,6 +66,7 @@ export default function WorldIDLogin({ onSuccess }: { onSuccess: (result: ISucce
                 verification_level={VerificationLevel.Device}
             >
                 {({ open }) => (
+                  
                     <motion.div 
                         className="flex flex-row justify-between px-4 items-center w-64 h-12 bg-white text-black font-bold text-base rounded-lg cursor-pointer"
                         whileHover={{

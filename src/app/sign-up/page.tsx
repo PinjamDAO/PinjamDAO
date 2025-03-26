@@ -45,7 +45,7 @@ const maritial = [
 
 const education = [
   'Doctorate',
-  'Masters',
+  'Master',
   'Bachelor',
   'Secondary',
   'No Education'

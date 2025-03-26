@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
 import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
+import { max } from "date-fns";
 
 function LoanInfoCarousel() {
 
@@ -72,12 +73,12 @@ function InvestmentCard() {
 
 }
 
-function AddFundsDialog({ walletAddress }: { walletAddress: string | undefined }) {
+function AddFundsDialog({ walletAddress, onOpenChange }: { walletAddress: string | undefined, onOpenChange: () => void }) {
 
   const { Canvas } = useQRCode()
 
   return(
-    <Dialog>
+    <Dialog onOpenChange={onOpenChange}>
       <DialogTrigger>
         <motion.div
           className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold
@@ -133,7 +134,7 @@ export default function Dashboard() {
   const [userData, setUserData] = useState<userType | null>(null)
   const [userUSDCBal, setUserUSDCBal] = useState<number | null>(null)
   const [userETHBal, setUserETHBal] = useState<number | null>(null)
-
+  const [maxLoanableAmount, setMaxLoanableAmount] = useState<number>(0)
   const [userLoanHistory, setUserLoanHistory] = useState<LoanHistory[]>([])
 
   useEffect(() => {
@@ -162,6 +163,17 @@ export default function Dashboard() {
       }
     })
 
+    fetch('/api/loan', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => {
+          console.log(json)
+          setMaxLoanableAmount(json.available)
+        })
+      }
+    })
+
     fetch('/api/me/loans', {
       method: 'GET'
     }).then((resp) => {
@@ -176,6 +188,47 @@ export default function Dashboard() {
     console.log(JSON.stringify(userData))
   }, [userData])
 
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+      refreshMetrics()
+    }, 30000)
+
+    return () => clearInterval(interval)
+
+  }, [])
+
+  
+
+  const refreshMetrics = () => {
+    fetch('/api/wallet/eth', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setUserETHBal(json.eth))
+      }
+    })
+
+    fetch('/api/wallet/usdc', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setUserUSDCBal(json.usdc))
+      }
+    })
+
+    fetch('/api/loan', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => {
+          console.log(json)
+          setMaxLoanableAmount(json.available)
+        })
+      }
+    })
+  }
+
   return (
     <div className="flex flex-col min-h-screen w-screen bg-[#EFF8FC] items-center">
       <Header userLoggedIn={true}/>
@@ -188,13 +241,13 @@ export default function Dashboard() {
               <div className="font-bold text-black text-6xl">{userUSDCBal?.toLocaleString()} USDC</div>
               <div className="flex justify-center items-center size-3 bg-black rounded-full"/>
               <div className="font-bold text-black text-6xl">{userETHBal?.toLocaleString()} ETH</div>
-              <AddFundsDialog walletAddress={userData?.walletAddress} />
+              <AddFundsDialog walletAddress={userData?.walletAddress} onOpenChange={refreshMetrics} />
             </div>
           </div>
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
           <div className="flex flex-row justify-between px-10">
             <div className="text-black text-3xl font-bold">Ongoing Loans</div>
-            <NewLoanApplicationDialog userData={userData} userETHBal={5000}/>
+            <NewLoanApplicationDialog userData={userData} userETHBal={userETHBal} maxLoanableAmount={maxLoanableAmount}/>
           </div>
           <div className="flex justify-center">
             <LoanInfoCarousel />
@@ -212,11 +265,11 @@ export default function Dashboard() {
               }
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>
-            <div className="flex flex-col w-[45%] space-y-8">
+            <div className="flex flex-col w-[45%] space-y-5">
 
               <div className="flex flex-row justify-between">
                 <div className="text-black text-3xl font-bold">Investments</div>
-                <NewDepositDialog userUSDCBal={5000}/>
+                <NewDepositDialog userUSDCBal={userUSDCBal}/>
               </div>
               <div className="space-y-5">
                 
