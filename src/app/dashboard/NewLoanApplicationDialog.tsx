@@ -10,10 +10,12 @@ export default function NewLoanApplicationDialog(
   { userData,
     userETHBal, 
     maxLoanableAmount,
+    hasActiveLoan,
   }: { 
     userData: userType | null, 
     userETHBal: number | null, 
     maxLoanableAmount: number,
+    hasActiveLoan: boolean
   }
 ) {
 
@@ -26,7 +28,6 @@ export default function NewLoanApplicationDialog(
   const [selectedPurpose, setSelectedPurpose] = useState('')
   const [applicationStatus, setApplicationStatus] = useState<boolean | null>(null)
   const [userPublicAddress, setUserPublicAddress] = useState('')
-  const [loanSuccess, setLoanSuccess] = useState<boolean | null>(false)
 
   const loanPurposes = [
     'Property',
@@ -193,18 +194,15 @@ export default function NewLoanApplicationDialog(
 
   return(
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger disabled={hasActiveLoan}>
         <motion.div
-          className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
-          whileHover={{
-            scale: 1.1
-          }}
-          whileTap={{
-            scale: 0.9
-          }}
+          className={`flex items-center justify-center w-48 h-12  rounded-lg text-white
+          font-semibold text-lg cursor-pointer select-none ${hasActiveLoan ? 'bg-[#afa3c4]' : 'bg-[#5202DB]'}`}
+          whileHover={hasActiveLoan ? {} : {scale: 1.1}}
+          whileTap={hasActiveLoan ? {} : {scale: 0.9}}
           onClick={reset}
           >
-            New Loan
+            {hasActiveLoan ? 'Loan Limit Reached' :'New Loan'}
         </motion.div>
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">

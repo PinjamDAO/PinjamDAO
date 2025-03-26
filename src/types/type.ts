@@ -71,3 +71,23 @@ export type LoanDetails = {
     interest: number,
     totalDue: number
 }
+
+export type ActiveLoan = {
+	loanAmount: string, // in usdc
+	collateralAmount: string, // in eth
+	startTime: Date,
+	endTime: Date,
+	active: string,
+	liquidated: string,
+	interest: string,
+	totalDue: string,
+  }
+  
+export type LoanHistory = {
+	"loanAmount": string,
+	"collateralAmount": string,
+	"startTime": Date,
+	"endTime": Date,
+	"totalRepaid": string,
+	"closedTime": Date
+}

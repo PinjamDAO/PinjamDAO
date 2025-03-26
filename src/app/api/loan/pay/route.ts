@@ -29,7 +29,7 @@ async function createJob(amount: string, user: userType) {
             amount: [amount],
             destinationAddress: process.env.WALLET_ADDR!,
             blockchain: 'ETH-SEPOLIA',
-            tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
+            tokenAddress: '',
             walletId: user.walletID,
             fee: {
                 type: 'level',

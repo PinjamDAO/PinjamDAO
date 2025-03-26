@@ -10,36 +10,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { motion } from "motion/react";
 
-import { useQRCode } from 'next-qrcode';
+import { Progress } from "@/components/ui/progress"
+
 import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
 import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
-import { toast } from "sonner";
+import AddFundsDialog from "./AddFundsDialog";
+import { ActiveLoan, LoanHistory } from "@/types/type";
 
-type ActiveLoan = {
-  loanAmount: string, // in usdc
-  collateralAmount: string, // in eth
-  startTime: Date,
-  endTime: Date,
-  active: string,
-  liquidated: string,
-  interest: string,
-  totalDue: string,
-}
 
-function LoanInfoCarousel({ activeLoan }: {activeLoan: ActiveLoan | null}) {
+function LoanInfoCarousel({ userUSDCBal, activeLoan }: { userUSDCBal: number | null, activeLoan: ActiveLoan | null}) {
 
   const activeLoans = []
 
@@ -59,7 +41,7 @@ function LoanInfoCarousel({ activeLoan }: {activeLoan: ActiveLoan | null}) {
           <CarouselContent>
             {activeLoans.map((loan, index) => (
                 <CarouselItem key={index} className="basis-1/4">
-                  <LoanInfoCard loan={loan}/>
+                  <LoanInfoCard loan={loan} userUSDCBal={userUSDCBal}/>
                 </CarouselItem>
             ))}
           </CarouselContent>
@@ -75,14 +57,14 @@ function HistoryCard({title, subtitle, amount}: {title: string, subtitle: string
     <div className="flex flex-row justify-between h-24 px-5 hover:bg-gray-200 rounded-lg transition-all select-none">
       <div className="flex flex-row space-x-5">
         <div className="flex items-center justify-center">
-          <div className="size-16 bg-amber-400 rounded-full"></div>
+          <div className="size-16 bg-[#9747FF] rounded-full"></div>
         </div>
         <div className="flex flex-col space-y-2 justify-center">
           <div className="font-semibold text-2xl">{title}</div>
           <div className="font-base text-xl">{subtitle}</div>
         </div>
       </div>
-      <div className="flex flex-col justify-center font-semibold text-2xl">{amount ? amount + ' USDC': ''}</div>
+      <div className="flex flex-col justify-center font-semibold text-2xl">{amount ? amount.toFixed(2) + ' USDC': ''}</div>
     </div>
   )
 
@@ -92,61 +74,8 @@ function InvestmentCard() {
 
 }
 
-function AddFundsDialog({ walletAddress, onOpenChange }: { walletAddress: string | undefined, onOpenChange: () => void }) {
 
-  const { Canvas } = useQRCode()
 
-  return(
-    <Dialog onOpenChange={onOpenChange}>
-      <DialogTrigger>
-        <motion.div
-          className="flex justify-center w-12 h-12 bg-[#5202DB] rounded-full text-white font-semibold
-          text-4xl text-center cursor-pointer select-none"
-          whileHover={{
-            scale: 1.1
-          }}
-          whileTap={{
-            scale: 0.9
-          }}
-        >
-          +
-        </motion.div>
-      </DialogTrigger>
-      <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">
-        <DialogHeader>
-          <DialogTitle className="font-bold text-4xl text-black pt-5">Add money</DialogTitle>
-        </DialogHeader>
-        {
-          walletAddress !== undefined ? <Canvas
-          text={walletAddress}
-          options={{
-            errorCorrectionLevel: 'M',
-            margin: 1,
-            scale: 8,
-            width: 400,
-            color: {
-              dark: '#5202DB',
-              light: '#EFF8FC',
-            },
-          }}
-        /> : "Loading..."
-        }
-        
-        <div className="font-semibold text-xl px-10 text-center">Scan the QR Code with your crypto wallet such as Metamask.</div>
-      </DialogContent>
-    </Dialog>
-  )
-
-}
-
-type LoanHistory = {
-  "loanAmount": string,
-  "collateralAmount": string,
-  "startTime": Date,
-  "endTime": Date,
-  "totalRepaid": string,
-  "closedTime": Date
-}
 
 export default function Dashboard() {
 
@@ -206,15 +135,17 @@ export default function Dashboard() {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
-        resp.json().then((json) => setActiveLoan(json))
+        resp.json().then((json) => {
+          if (json.active === true) {
+            setActiveLoan(json)
+          } else {
+            setActiveLoan(null)
+          }
+        })
       }
     })
 
   }, [])
-
-  useEffect(() => {
-    console.log(JSON.stringify(userData))
-  }, [userData])
 
   useEffect(() => {
 
@@ -225,8 +156,6 @@ export default function Dashboard() {
     return () => clearInterval(interval)
 
   }, [])
-
-  
 
   const refreshMetrics = () => {
     fetch('/api/wallet/eth', {
@@ -255,6 +184,28 @@ export default function Dashboard() {
         })
       }
     })
+
+    fetch('/api/me/loan', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setUserLoanHistory(json))
+      }
+    })
+
+    fetch('/api/me/loan/active', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => {
+          if (json.active === true) {
+            setActiveLoan(json)
+          } else {
+            setActiveLoan(null)
+          }
+        })
+      }
+    })
   }
 
   return (
@@ -279,10 +230,11 @@ export default function Dashboard() {
               userData={userData}
               userETHBal={userETHBal}
               maxLoanableAmount={maxLoanableAmount}
+              hasActiveLoan={activeLoan !== null}
               />
           </div>
           <div className="flex justify-center">
-            <LoanInfoCarousel activeLoan={activeLoan}/>
+            <LoanInfoCarousel activeLoan={activeLoan} userUSDCBal={userUSDCBal}/>
           </div>
           <div className="flex flex-row justify-between px-10 py-6">
             
@@ -292,8 +244,8 @@ export default function Dashboard() {
                 userLoanHistory?.map((h, i) => <HistoryCard 
                   key={i}
                   title="Took out a loan"
-                  subtitle={h.startTime.toLocaleDateString()}
-                  amount={Number(h.loanAmount)}/>)
+                  subtitle={new Date(h.startTime).toLocaleDateString()}
+                  amount={Number(h.totalRepaid)}/>)
               }
             </div>
             <div className="w-1 h-auto border-2 border-gray-200 rounded-full mt-16"/>

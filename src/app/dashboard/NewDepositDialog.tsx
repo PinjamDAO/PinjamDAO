@@ -71,12 +71,12 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
       return ('Cannot deposit specified amount')
 
     if (depositSuccess === true) {
-      return ('Deposit Success!')
+      return ('Deposit Scheduled')
     } else if (depositSuccess === false) {
       return ('Deposit Failed')
     }
 
-    return ('Deposit')
+    return (`Deposit ${depositAmount} USDC`)
   }
 
   return(
