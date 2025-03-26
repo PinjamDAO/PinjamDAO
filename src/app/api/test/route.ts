@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 }
 
 export async function  POST (request: Request) {    
-    const data = extractBody(request)
+    const data = await extractBody(request)
     console.log(data.test)
     return NextResponse.json({})
 }

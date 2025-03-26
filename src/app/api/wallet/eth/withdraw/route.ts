@@ -47,7 +47,7 @@ async function createJob(user: userType, amount: string, receivAddr: string) {
 // withdraw collateral
 export async function POST( request: Request ) {
     const user = await getCurrentUser()
-    const data = extractBody(request)
+    const data = await extractBody(request)
 
     if (user === null) {
         return NextResponse.json({

@@ -61,7 +61,7 @@ async function createJob(balance: string, user: userType) {
 // send money for people to loan hehehaw
 export async function POST(request: Request) {
     const user = await getCurrentUser()
-    const data = extractBody(request)
+    const data = await extractBody(request)
     // const data = await request.json()
 
     if (user === null) {

@@ -64,7 +64,7 @@ async function createJob(totalDue: string, user: userType) {
 // pay your loan
 export async function POST(request: Request) {
     const user = await getCurrentUser()
-    const data = extractBody(request)
+    const data = await extractBody(request)
     // const data = await request.json()
 
     if (user === null) {
