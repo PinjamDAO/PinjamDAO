@@ -362,7 +362,7 @@ export async function amazing(circleAddr: string, circleID: string) {
             amount: [min],
             destinationAddress: circleAddr,
             blockchain: 'ETH-SEPOLIA',
-            tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
+            tokenAddress: "",
             walletId: circleID,
             fee: {
                 type: 'level',
