@@ -4,6 +4,7 @@ import { userType } from "@/models/users";
 import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
+import { checkOngoingTasks } from "@/services/task";
 import { extractBody, truncateDecimals } from "@/services/utils";
 import { getEthBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
@@ -18,49 +19,54 @@ async function createJob(balance: string, addr: string, user: userType) {
     })
     await job.save()
 
-    const client = initiateDeveloperControlledWalletsClient({
-        apiKey: process.env.CIRCLE_API_KEY!,
-        entitySecret: process.env.CIRCLE_SECRET!
-    });
-
-    await updateTaskState(job, TaskProgress.ETHToMainWallet)
-    let res;
     try {
-        res = await client.createTransaction({
-            amount: [balance],
-            destinationAddress: process.env.WALLET_ADDR!,
-            blockchain: "ETH-SEPOLIA",
-            tokenAddress: "",
-            walletId: user.walletID,
-            fee: {
-                type: 'level',
-                config: {
-                    feeLevel: 'HIGH'
+        const client = initiateDeveloperControlledWalletsClient({
+            apiKey: process.env.CIRCLE_API_KEY!,
+            entitySecret: process.env.CIRCLE_SECRET!
+        });
+    
+        await updateTaskState(job, TaskProgress.ETHToMainWallet)
+        let res;
+        try {
+            res = await client.createTransaction({
+                amount: [balance],
+                destinationAddress: process.env.WALLET_ADDR!,
+                blockchain: "ETH-SEPOLIA",
+                tokenAddress: "",
+                walletId: user.walletID,
+                fee: {
+                    type: 'level',
+                    config: {
+                        feeLevel: 'HIGH'
+                    }
                 }
-            }
-        })
-    } catch (e: any) {
+            })
+        } catch (e: any) {
+            console.log(e)
+            console.log(e.response.data.errors)
+            return await updateTaskState(job, TaskProgress.Failed)
+        }
+    
+        // poll for the transaction here to be completed
+        const transData = await waitForTransaction(res.data!.id);
+        if (transData?.transaction?.state !== "COMPLETE")
+            return await updateTaskState(job, TaskProgress.Failed)
+    
+        await updateTaskState(job, TaskProgress.DepositCollateral)
+        // oh boy oh boy time to interact with blockchain!@!!!!
+        await depositCollateral(balance)
+    
+        await updateTaskState(job, TaskProgress.SendingLoan)
+        const amount = await takeLoan(addr)
+    
+        if (amount === undefined)
+            return await updateTaskState(job, TaskProgress.Failed)
+    
+        await updateTaskState(job, TaskProgress.Done)
+    } catch (e) {
         console.log(e)
-        console.log(e.response.data.errors)
         return await updateTaskState(job, TaskProgress.Failed)
     }
-
-    // poll for the transaction here to be completed
-    const transData = await waitForTransaction(res.data!.id);
-    if (transData?.transaction?.state !== "COMPLETE")
-        return await updateTaskState(job, TaskProgress.Failed)
-
-    await updateTaskState(job, TaskProgress.DepositCollateral)
-    // oh boy oh boy time to interact with blockchain!@!!!!
-    await depositCollateral(balance)
-
-    await updateTaskState(job, TaskProgress.SendingLoan)
-    const amount = await takeLoan(addr)
-
-    if (amount === undefined)
-        return await updateTaskState(job, TaskProgress.Failed)
-
-    await updateTaskState(job, TaskProgress.Done)
 }
 
 // pay collateral, get loan
@@ -79,6 +85,13 @@ export async function POST(request: Request) {
         return NextResponse.json({
             'msg': 'empty receiving addr'
         }, { status: 401 })
+
+
+    if (await checkOngoingTasks(TaskType.GetLoan)) {
+        return NextResponse.json({
+            'msg': 'already getting a loan'
+        }, { status: 409 })
+    }
 
     let balance = await getEthBalance(user.walletAddress)
     let balanceFloat = parseFloat(balance)

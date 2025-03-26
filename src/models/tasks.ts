@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export enum TaskType {
-    SendUSDC = 'SendUSDC',
+    DepositUSDC = 'DepositUSDC',
     PayLoan = 'PayLoan',
     GetLoan = 'GetLoan',
     WithdrawETH = 'WithdrawETH',
@@ -20,7 +20,8 @@ export enum TaskProgress {
     RepayingCollateral = 'RepayingCollateral',
     WithdrawUSDC = 'WithdrawUSDC',
     RefundingCollateral = 'RefundingCollateral',
-    UpdateCircle = 'UpdateCircle',
+    Cooldown = 'Cooldown',
+    Saving = 'Saving',
 
     Done = 'Done',
     Failed = 'Failed',
