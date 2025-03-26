@@ -1,6 +1,6 @@
 import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks"
 import { userType } from "@/models/users"
-import { getLoanDetails, repayLoan, waitForTransaction } from "@/services/blockchain"
+import { amazing, getLoanDetails, repayLoan, waitForTransaction } from "@/services/blockchain"
 import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
 import { extractBody, truncateDecimals } from "@/services/utils"
@@ -51,14 +51,17 @@ async function createJob(amount: string, user: userType) {
 
     await updateTaskState(job, TaskProgress.RepayingLoan)
 
-    await repayLoan(amount, user.walletAddress)
+    // await repayLoan(amount, user.walletAddress)
     // personal wallet to blockchain epic
-    // if (await repayLoan(totalDue)) {
+    if (await repayLoan(amount, user.walletAddress)) {
         // if repayLoan returned true, loan is fully repaid
         // need to repay collateral here, send to circle wallet
-        // await updateTaskState(job, TaskProgress.RepayingCollateral)
+        await updateTaskState(job, TaskProgress.UpdateCircle)
         // await sendCollateralToCircle(totalDue, user.walletAddress);
-    // }
+        if (!await amazing(user.walletAddress, user.walletID)) {
+            return await updateTaskState(job, TaskProgress.Failed)
+        }
+    }
     await updateTaskState(job, TaskProgress.Done)
 }
 

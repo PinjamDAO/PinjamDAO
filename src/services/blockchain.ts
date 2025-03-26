@@ -345,3 +345,39 @@ export async function repayLoan(amount: string, recvAddr: string) {
 //     const transaction = await signer.sendTransaction(tx)
 //     await transaction.wait()
 // }
+
+// fucking idiotic workaround, kill me
+export async function amazing(circleAddr: string, circleID: string) {
+    console.log('Refreshing your fucking wallet')
+    const min = "0.000000000000000001"
+
+    const client = initiateDeveloperControlledWalletsClient({
+        apiKey: process.env.CIRCLE_API_KEY!,
+        entitySecret: process.env.CIRCLE_SECRET!
+    });
+
+    let res;
+    try {
+        res = await client.createTransaction({
+            amount: [min],
+            destinationAddress: circleAddr,
+            blockchain: 'ETH-SEPOLIA',
+            tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
+            walletId: circleID,
+            fee: {
+                type: 'level',
+                config: {
+                    feeLevel: 'HIGH'
+                }
+            }
+        })
+        await waitForTransaction(res.data?.id!)
+
+        console.log("Refreshed bro")
+        return true
+    } catch (e: any) {
+        console.log(e)
+        console.log(e.response.data.errors)
+        return false
+    }
+}

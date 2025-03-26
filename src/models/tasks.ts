@@ -20,6 +20,7 @@ export enum TaskProgress {
     RepayingCollateral = 'RepayingCollateral',
     WithdrawUSDC = 'WithdrawUSDC',
     RefundingCollateral = 'RefundingCollateral',
+    UpdateCircle = 'UpdateCircle',
 
     Done = 'Done',
     Failed = 'Failed',
