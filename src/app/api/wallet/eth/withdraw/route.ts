@@ -3,7 +3,7 @@ import { userType } from "@/models/users"
 import { waitForTransaction } from "@/services/blockchain"
 import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
-import { extractBody } from "@/services/utils"
+import { extractBody, truncateDecimals } from "@/services/utils"
 import { getEthBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
@@ -74,7 +74,9 @@ export async function POST( request: Request ) {
         }, { status: 402 })
     }
 
-    if (data.amount > balanceFloat) {
+    data.amount = truncateDecimals(data.amount, 6)
+    const amountFloat = parseFloat(data.amount)
+    if (amountFloat > balanceFloat) {
     // if (data.amount > balance - MIN) {
         return NextResponse.json({
             'msg': 'Not enough in wallet'

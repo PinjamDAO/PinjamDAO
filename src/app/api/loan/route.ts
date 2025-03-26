@@ -3,7 +3,7 @@ import { userType } from "@/models/users";
 import { connectToBlockchain, connectToMicroloan, depositUSDC, getLoanDetails, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
-import { extractBody } from "@/services/utils";
+import { extractBody, truncateDecimals } from "@/services/utils";
 import { getEthBalance, getUSDCBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { dataLength, ethers } from "ethers";
@@ -97,7 +97,8 @@ export async function POST(request: Request) {
                 'msg': 'Not enough USDC funds in wallet'
             }, { status: 402 })
         }
-        amountToSend = data.amount
+        amountToSend = truncateDecimals(data.amount, 6)
+        // amountToSend = data.amount
     }
     
     createJob(amountToSend, user)

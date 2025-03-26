@@ -4,7 +4,7 @@ import { userType } from "@/models/users";
 import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
-import { extractBody } from "@/services/utils";
+import { extractBody, truncateDecimals } from "@/services/utils";
 import { getEthBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { NextResponse } from "next/server";
@@ -113,7 +113,8 @@ export async function POST(request: Request) {
                 'msg': 'Not enough funds in wallet'
             }, { status: 402 })
         }
-        sendAmount = data.amount
+        sendAmount = truncateDecimals(data.amount, 18)
+        // sendAmount = data.amount
     }
 
     const loanAmount = await getCollateralValue(sendAmount)
