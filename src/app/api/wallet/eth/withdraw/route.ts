@@ -74,7 +74,7 @@ export async function POST( request: Request ) {
         }, { status: 402 })
     }
 
-    data.amount = truncateDecimals(data.amount, 6)
+    data.amount = truncateDecimals(data.amount, 18)
     const amountFloat = parseFloat(data.amount)
     if (amountFloat > balanceFloat) {
     // if (data.amount > balance - MIN) {

@@ -96,6 +96,8 @@ export async function getCollateralValue(amount: string) {
     const microLoan = await connectToMicroloan()
     const weiValue = ethers.parseEther(amount) // this is in wei
     const usdcValue = await microLoan.getCollateralValue(weiValue)
+    console.log(usdcValue)
+    console.log(Number(usdcValue) / (10 ** 6))
     return ethers.formatUnits(usdcValue, 6)
 }
 

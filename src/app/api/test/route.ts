@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     //     "msg": 'Ok'
     // })
     return NextResponse.json({
-        'wei': Number(ethers.parseEther('0.0001')),
-        'res': await getCollateralValue('0.0001')
+        'wei': Number(ethers.parseEther('1')),
+        'res': await getCollateralValue('1')
     })
 }
 
