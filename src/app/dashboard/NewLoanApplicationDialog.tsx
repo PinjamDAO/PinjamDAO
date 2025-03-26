@@ -4,8 +4,18 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogHeader } from 
 import { AnimatePresence, motion } from "motion/react"
 import { useState, useEffect } from "react"
 import Dropdown from "@/components/Dropdown"
+import { toast } from "sonner"
 
-export default function NewLoanApplicationDialog({ userData, userETHBal, maxLoanableAmount }: { userData: userType | null, userETHBal: number | null, maxLoanableAmount: number }) {
+export default function NewLoanApplicationDialog(
+  { userData,
+    userETHBal, 
+    maxLoanableAmount,
+  }: { 
+    userData: userType | null, 
+    userETHBal: number | null, 
+    maxLoanableAmount: number,
+  }
+) {
 
   const annualInterest = 15
   const repaymentDurationMonths = 6
@@ -104,14 +114,18 @@ export default function NewLoanApplicationDialog({ userData, userETHBal, maxLoan
     fetch('/api/loan/take', {
       method: 'POST',
       body: JSON.stringify({
-        amount: collateralAmountETH.toString(),
+        amount: collateralAmountETH.toFixed(18),
         addr: userPublicAddress
       })
+    }).then((resp) =>{
+      if (resp.ok) {
+        setOpen(false)
+        toast(`Loan fund of ${borrowAmount} USDC have been scheduled to be transfered in ~10 minutes.`)
+      }
     })
   }
 
   // helpers 
-
   const getAnnualInterest = () => {
     return (annualInterest)
   }

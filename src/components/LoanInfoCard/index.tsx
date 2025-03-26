@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export default function LoanInfoCard() {
 
@@ -50,6 +51,7 @@ export default function LoanInfoCard() {
             whileTap={{
               scale: 0.9
             }}
+            onClick={() => toast('Loan paid')}
             >
               Pay
             </motion.div>

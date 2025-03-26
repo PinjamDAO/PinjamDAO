@@ -2,6 +2,7 @@ import { DialogHeader } from "@/components/ui/dialog"
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { motion } from "motion/react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number | null}) {
 
@@ -29,6 +30,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
     }).then((resp) => {
       if (resp.ok) {
         setDepositSuccess(true)
+        toast(`Successfully deposited ${depositAmount} USDC into the loan pool.`)
       }
     }).catch((e) => console.error(e))
 

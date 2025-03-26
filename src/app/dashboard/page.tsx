@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
 import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
-import { max } from "date-fns";
+import { toast } from "sonner";
 
 function LoanInfoCarousel() {
 
@@ -223,7 +223,7 @@ export default function Dashboard() {
       if (resp.ok) {
         resp.json().then((json) => {
           console.log(json)
-          setMaxLoanableAmount(json.available)
+          setMaxLoanableAmount(Math.floor(json.available * 0.8))
         })
       }
     })
@@ -247,7 +247,11 @@ export default function Dashboard() {
           <hr className="border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
           <div className="flex flex-row justify-between px-10">
             <div className="text-black text-3xl font-bold">Ongoing Loans</div>
-            <NewLoanApplicationDialog userData={userData} userETHBal={userETHBal} maxLoanableAmount={maxLoanableAmount}/>
+            <NewLoanApplicationDialog 
+              userData={userData}
+              userETHBal={userETHBal}
+              maxLoanableAmount={maxLoanableAmount}
+              />
           </div>
           <div className="flex justify-center">
             <LoanInfoCarousel />
