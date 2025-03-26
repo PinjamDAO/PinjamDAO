@@ -90,7 +90,7 @@ export default function NewLoanApplicationDialog(
       TotalLoanCollatoralAmount: borrowAmount // USDC, not ETH
     }
 
-    fetch('http://localhost:5000/predict', {
+    fetch('https://vhack-flask-production.up.railway.app/predict', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

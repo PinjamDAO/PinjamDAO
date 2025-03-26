@@ -2,13 +2,20 @@ import { motion, AnimatePresence } from "motion/react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-export default function LoanInfoCard() {
+type ActiveLoan = {
+  loanAmount: string, // in usdc
+  collateralAmount: string, // in eth
+  startTime: Date,
+  endTime: Date,
+  active: string,
+  liquidated: string,
+  interest: string,
+  totalDue: string,
+}
 
-  const loanedAmount = 1000
-  const loanName = "House"
-  const repaymentAmount = 500
-  const dueDate = new Date(2025, 6, 1)
-  
+export default function LoanInfoCard({ loan }: { loan: ActiveLoan }) {
+
+  const loanName = "Loan"
   const [hovering, setHovering] = useState(false)
 
   const getDueDate = (date: Date) => {
@@ -21,7 +28,23 @@ export default function LoanInfoCard() {
     else if (daysUntil > 7 && daysUntil <= 31)
       return (weeksUntil + ' week' + (weeksUntil > 1 ? 's' : ''))
 
-    return (date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' }))
+    return (date.toLocaleDateString(undefined, { year: 'numeric', month: 'short' }))
+  }
+
+  const payLoan = () => {
+
+    fetch('/api/loan/pay', {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: 10,
+        addr: ''
+      })
+    }).then((resp) => {
+      if (resp.ok) {
+        toast(`Repaid ${loan.totalDue} USDC.`)
+      }
+    })
+
   }
 
   return (
@@ -32,10 +55,10 @@ export default function LoanInfoCard() {
       onHoverEnd={() => setHovering(false)}
     >
       <div className="text-5xl font-bold -ml-1">
-        {loanedAmount} USDC
+        {Number(loan.loanAmount).toFixed(2)} USDC
       </div>
       <div className="text-3xl font-semibold ">{loanName}</div>
-      <div className="text-2xl font-semibold">{repaymentAmount}$ due in {getDueDate(dueDate)}</div>
+      <div className="text-2xl font-semibold">{Number(loan.totalDue).toFixed(2)}$ due in {getDueDate(new Date(loan.endTime))}</div>
       <div className="absolute bottom-5 right-5">
         <AnimatePresence mode="wait">
           {
@@ -51,7 +74,7 @@ export default function LoanInfoCard() {
             whileTap={{
               scale: 0.9
             }}
-            onClick={() => toast('Loan paid')}
+            onClick={payLoan}
             >
               Pay
             </motion.div>

@@ -25,12 +25,12 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
     fetch('/api/loan', {
       method: 'POST',
       body: JSON.stringify({
-        amount: depositAmount
+        amount: depositAmount.toFixed(6)
       })
     }).then((resp) => {
       if (resp.ok) {
         setDepositSuccess(true)
-        toast(`Successfully deposited ${depositAmount} USDC into the loan pool.`)
+        toast(`Successfully scheduled ${depositAmount} USDC to be deposited into the loan pool.`)
       }
     }).catch((e) => console.error(e))
 

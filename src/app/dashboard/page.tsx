@@ -28,27 +28,46 @@ import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
 import { toast } from "sonner";
 
-function LoanInfoCarousel() {
+type ActiveLoan = {
+  loanAmount: string, // in usdc
+  collateralAmount: string, // in eth
+  startTime: Date,
+  endTime: Date,
+  active: string,
+  liquidated: string,
+  interest: string,
+  totalDue: string,
+}
+
+function LoanInfoCarousel({ activeLoan }: {activeLoan: ActiveLoan | null}) {
+
+  const activeLoans = []
+
+  if (activeLoan !== null)
+    activeLoans.push(activeLoan)
 
   return (
-    <Carousel
-    className="flex justify-center w-[95%]"
-    opts={{
-      align: 'center',
-      loop: true
-    }}>
-      <CarouselPrevious />
-        <CarouselContent>
-          {Array.from({ length: 10 }).map((_, index) => (
-              <CarouselItem key={index} className="basis-1/4">
-                <LoanInfoCard />
-              </CarouselItem>
-          ))}
-        </CarouselContent>
-      <CarouselNext />
-    </Carousel>
+    <>
+    {
+      activeLoans.length > 0 ? <Carousel
+      className="flex justify-center w-[95%]"
+      opts={{
+        align: 'center',
+        loop: true
+      }}>
+        <CarouselPrevious />
+          <CarouselContent>
+            {activeLoans.map((loan, index) => (
+                <CarouselItem key={index} className="basis-1/4">
+                  <LoanInfoCard loan={loan}/>
+                </CarouselItem>
+            ))}
+          </CarouselContent>
+        <CarouselNext />
+      </Carousel> : <div className="text-black font-semibold text-2xl">You have no active loans.</div>
+    }
+    </>
   )
-
 }
 
 function HistoryCard({title, subtitle, amount}: {title: string, subtitle: string, amount: number}) {
@@ -136,6 +155,7 @@ export default function Dashboard() {
   const [userETHBal, setUserETHBal] = useState<number | null>(null)
   const [maxLoanableAmount, setMaxLoanableAmount] = useState<number>(0)
   const [userLoanHistory, setUserLoanHistory] = useState<LoanHistory[]>([])
+  const [activeLoan, setActiveLoan] = useState<ActiveLoan | null>(null)
 
   useEffect(() => {
 
@@ -174,11 +194,19 @@ export default function Dashboard() {
       }
     })
 
-    fetch('/api/me/loans', {
+    fetch('/api/me/loan', {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
         resp.json().then((json) => setUserLoanHistory(json))
+      }
+    })
+
+    fetch('/api/me/loan/active', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setActiveLoan(json))
       }
     })
 
@@ -254,7 +282,7 @@ export default function Dashboard() {
               />
           </div>
           <div className="flex justify-center">
-            <LoanInfoCarousel />
+            <LoanInfoCarousel activeLoan={activeLoan}/>
           </div>
           <div className="flex flex-row justify-between px-10 py-6">
             
