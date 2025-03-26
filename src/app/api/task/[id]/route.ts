@@ -13,7 +13,7 @@ export async function GET(request: NextApiRequest, { params }: { params: { id: s
         }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     const task = await Task.findById(id)
     if (task.userId !== user.worldId) {
         return NextResponse.json({

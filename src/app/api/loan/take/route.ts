@@ -55,7 +55,7 @@ async function createJob(balance: string, addr: string, user: userType) {
     await depositCollateral(balance)
 
     await updateTaskState(job, TaskProgress.SendingLoan)
-    const amount = await takeLoan(balance, addr)
+    const amount = await takeLoan(addr)
 
     if (amount === undefined)
         return await updateTaskState(job, TaskProgress.Failed)

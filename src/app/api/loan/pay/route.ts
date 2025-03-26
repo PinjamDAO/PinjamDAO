@@ -1,6 +1,6 @@
 import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks"
 import { userType } from "@/models/users"
-import { getLoanDetails, repayLoan, sendCollateralToCircle, waitForTransaction } from "@/services/blockchain"
+import { getLoanDetails, repayLoan, waitForTransaction } from "@/services/blockchain"
 import connectDB from "@/services/db"
 import { getCurrentUser } from "@/services/session"
 import { extractBody, truncateDecimals } from "@/services/utils"
@@ -8,7 +8,7 @@ import { getUSDCBalance } from "@/services/wallet"
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets"
 import { NextResponse } from "next/server"
 
-async function createJob(totalDue: string, user: userType) {
+async function createJob(amount: string, user: userType) {
     await connectDB()
 
     const job = await Task.create({
@@ -26,7 +26,7 @@ async function createJob(totalDue: string, user: userType) {
     let res;
     try {
         res = await client.createTransaction({
-            amount: [totalDue],
+            amount: [amount],
             destinationAddress: process.env.WALLET_ADDR!,
             blockchain: 'ETH-SEPOLIA',
             tokenAddress: process.env.USDC_CONTRACT_ADDRESS!,
@@ -51,13 +51,14 @@ async function createJob(totalDue: string, user: userType) {
 
     await updateTaskState(job, TaskProgress.RepayingLoan)
 
+    await repayLoan(amount, user.walletAddress)
     // personal wallet to blockchain epic
-    if (await repayLoan(totalDue)) {
+    // if (await repayLoan(totalDue)) {
         // if repayLoan returned true, loan is fully repaid
         // need to repay collateral here, send to circle wallet
-        await updateTaskState(job, TaskProgress.RepayingCollateral)
-        await sendCollateralToCircle(totalDue, user.walletAddress);
-    }
+        // await updateTaskState(job, TaskProgress.RepayingCollateral)
+        // await sendCollateralToCircle(totalDue, user.walletAddress);
+    // }
     await updateTaskState(job, TaskProgress.Done)
 }
 

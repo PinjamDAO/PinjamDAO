@@ -1,4 +1,4 @@
-import { ethers, Wallet } from "ethers";
+import { ethers, TransactionRequest, Wallet } from "ethers";
 import dotenv from "dotenv";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { getSessionID } from "./session";
@@ -96,8 +96,6 @@ export async function getCollateralValue(amount: string) {
     const microLoan = await connectToMicroloan()
     const weiValue = ethers.parseEther(amount) // this is in wei
     const usdcValue = await microLoan.getCollateralValue(weiValue)
-    console.log(usdcValue)
-    console.log(Number(usdcValue) / (10 ** 6))
     return ethers.formatUnits(usdcValue, 6)
 }
 
@@ -173,7 +171,7 @@ export async function getAvailableUSDC() {
     return ethers.formatUnits(await microLoan.availableUSDC(), 6);
 }
 
-export async function takeLoan(amount: string, receipianAddr: string) {
+export async function takeLoan(receipianAddr: string) {
     // Get the signer
     const { provider, signer } = await connectToBlockchain()
 
@@ -209,11 +207,10 @@ export async function takeLoan(amount: string, receipianAddr: string) {
     // }
 
     // Take loan
-    console.log(`Taking loan of ${amount} USDC...`);
+    console.log(`Taking loan...`);
     const takeLoanTx = await microLoan.takeLoan(await getSessionID(), receipianAddr);
     await takeLoanTx.wait();
-    console.log(`Successfully borrowed ${amount} USDC!`);
-    return amount
+    console.log(`Successfully borrowed USDC!`);
 }
 
 export async function getLoanHistory() {
@@ -251,6 +248,7 @@ export async function getLoanDetails() {
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
     const loan = await microLoan.getActiveLoan(await getSessionID())
+    const interest = await microLoan.calculateBorrowerInterest(await getSessionID());
 
     const res = {
         loanAmount: ethers.formatUnits(loan.loanAmount, 6), // in usdc
@@ -259,13 +257,13 @@ export async function getLoanDetails() {
         endTime: new Date(Number(loan.endTime) * 1000),
         active: loan.active,
         liquidated: loan.liquidated,
-        interest: ethers.formatUnits(loan.interest, 6),
-        totalDue: ethers.formatUnits(loan.loanAmount + loan.interest, 6),
+        interest: ethers.formatUnits(interest, 6),
+        totalDue: ethers.formatUnits(loan.loanAmount + interest, 6),
     }
    return res
 }
 
-export async function repayLoan(amount: string) {
+export async function repayLoan(amount: string, recvAddr: string) {
     // Get the signer
     const { provider, signer } = await connectToBlockchain()
 
@@ -290,7 +288,10 @@ export async function repayLoan(amount: string) {
     console.log(`Total due: ${ethers.formatUnits(totalDue, 6)} USDC`);
 
     // // Convert amount to wei (USDC has 6 decimals)
-    const amountInWei = totalDue;
+    let amountInWei = ethers.parseUnits(amount, 6);
+    if (amountInWei > totalDue) {
+        amountInWei = totalDue
+    }
 
     // checked at api
     // if (amountInWei > totalDue) {
@@ -313,7 +314,7 @@ export async function repayLoan(amount: string) {
 
     // Repay loan
     console.log(`Repaying ${amount} USDC...`);
-    const repayTx = await microLoan.repayLoan(amountInWei, await getSessionID());
+    const repayTx = await microLoan.repayLoan(amountInWei, await getSessionID(), recvAddr);
     await repayTx.wait();
     console.log(`Successfully repaid ${amount} USDC!`);
 
@@ -328,13 +329,19 @@ export async function repayLoan(amount: string) {
     }
 }
 
-export async function sendCollateralToCircle(amount: string, circleAddr: string) {
-    const { provider, signer } = await connectToBlockchain()
-    const tx = {
-        from: process.env.WALLET_ADDR,
-        to: circleAddr,
-        value: ethers.parseEther(amount),
-    }
-    const transaction = await signer.sendTransaction(tx)
-    await transaction.wait()
-}
+// gone, blockchain is responsible for refunding now
+// export async function sendCollateralToCircle(amount: string, circleAddr: string) {
+//     const { provider, signer } = await connectToBlockchain()
+//     const { maxFeePerGas, maxPriorityFeePerGas } = await provider.getFeeData()
+//     const tx: TransactionRequest = {
+//         from: process.env.WALLET_ADDR,
+//         to: circleAddr,
+//         value: ethers.parseEther(amount),
+//         gasLimit: 21000,
+//         maxFeePerGas: maxFeePerGas,
+//         maxPriorityFeePerGas: maxPriorityFeePerGas
+//     }
+
+//     const transaction = await signer.sendTransaction(tx)
+//     await transaction.wait()
+// }
