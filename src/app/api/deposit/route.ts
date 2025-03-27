@@ -3,7 +3,7 @@ import connectDB from "@/services/db"
 import { getCurrentUser, getSessionID } from "@/services/session"
 import { NextResponse } from "next/server"
 
-export async function GET(request: Request) {
+export async function GET() {
     const user = await getCurrentUser()
     // const data = await request.json()
 

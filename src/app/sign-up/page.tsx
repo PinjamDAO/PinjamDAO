@@ -3,7 +3,7 @@
 import { DatePicker } from "@/components/DatePicker";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Image from 'next/image'
 
@@ -132,7 +132,7 @@ export default function SignUp() {
       <div className="flex flex-col h-screen w-screen bg-[#EFF8FC] justify-center items-center">
         <Header userLoggedIn={false}/>
         <div className="text-5xl font-bold text-black p-10">
-          Before you begin, we'll need some details.
+          Before you begin, we&apos;ll need some details.
         </div>
         <div className="text-black">
           <form

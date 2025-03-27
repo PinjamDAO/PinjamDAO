@@ -1,4 +1,5 @@
-import { motion } from "motion/react";
+'use client'
+
 import {
   DropdownMenu,
   DropdownMenuContent,

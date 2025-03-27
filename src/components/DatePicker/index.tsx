@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { motion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
  
 export function DatePicker({ date, setDate }: { date: Date, setDate: (d: Date) => void}) {
 

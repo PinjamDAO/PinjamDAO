@@ -5,11 +5,10 @@ import type { ISuccessResult } from "@worldcoin/idkit";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { redirect } from "next/navigation";
 
 export default function WorldIDLogin({ onSuccess }: { onSuccess: (result: ISuccessResult) => void }) {
     const [loading, setLoading] = useState(false);
-    const [verified, setVerified] = useState(false);
+    const [verified] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // App ID and action from environment variables (with fallbacks for development)

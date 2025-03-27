@@ -111,7 +111,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
               <div className="">USDC</div>
             </div>
           </div>
-          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
+          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-2"/>
           <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
             <div className="flex text-black font-bold text-3xl">Deposit Details</div>
             <div className="flex flex-row justify-between items-center">

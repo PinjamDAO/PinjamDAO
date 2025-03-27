@@ -23,6 +23,9 @@ function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | 
       if (resp.ok) {
         setRepaySuccess(true)
         toast(`Successfuly scheduled ${repayAmount} USDC for loan repayment.`)
+      } else if (resp.status === 409) {
+        setRepaySuccess(false)
+        toast.error('Loan repayment is already in progress, please wait for completion')
       }
     })
   }

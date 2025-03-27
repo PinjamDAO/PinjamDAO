@@ -10,15 +10,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-
-import { Progress } from "@/components/ui/progress"
-
 import { useEffect, useState } from "react";
 import { userType } from "@/models/users";
 import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
 import AddFundsDialog from "./AddFundsDialog";
 import { ActiveLoan, LoanHistory } from "@/types/type";
+// import { Progress } from "@/components/ui/progress"
 
 
 function LoanInfoCarousel({ userUSDCBal, activeLoan }: { userUSDCBal: number | null, activeLoan: ActiveLoan | null}) {
