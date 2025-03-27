@@ -94,7 +94,7 @@ function DepositCard({ deposit }: { deposit: Deposit }) {
   }
 
   return (
-    <div className="flex flex-row justify-between items-center h-24 hover:bg-gray-200
+    <div className="flex flex-row justify-between items-center h-24 pl-5 hover:bg-gray-200
     rounded-lg transition-all select-none">
       <div className="flex flex-row space-x-5">
         <div className="flex items-center justify-center">
@@ -303,7 +303,7 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-row justify-between px-10 py-6">
             
-            <div className="flex flex-col space-y-5 w-[45%]">
+            <div className="flex flex-col space-y-8 w-[45%]">
               <div className="text-black text-3xl font-bold">History</div>
               {
                 userLoanHistory?.map((h, i) => <InfoCard 

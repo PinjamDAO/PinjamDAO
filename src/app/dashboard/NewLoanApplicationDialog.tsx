@@ -121,7 +121,7 @@ export default function NewLoanApplicationDialog(
     }).then((resp) =>{
       if (resp.ok) {
         setOpen(false)
-        toast(`Loan fund of ${borrowAmount} USDC have been scheduled to be transfered in ~10 minutes.`)
+        toast(`Loan fund of ${borrowAmount} USDC has been scheduled to be transfered in ~10 minutes.`)
       }
     })
   }

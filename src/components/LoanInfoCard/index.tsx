@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { ActiveLoan } from "@/types/type";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
@@ -10,7 +10,7 @@ function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | 
   const [repayAmount, setRepayAmount] = useState(Number(loan.loanAmount))
   const [repaySuccess, setRepaySuccess] = useState<boolean | null>(null)
 
-  const [maxToRepay] = useState(Number(Number(loan.loanAmount).toFixed(2)))
+  const [maxToRepay] = useState(Math.ceil(Number(loan.loanAmount) * 100) / 100)
 
   const repayLoan = () => {
 
@@ -149,6 +149,10 @@ export default function LoanInfoCard({ userUSDCBal, loan }: { userUSDCBal: numbe
     return (date.toLocaleDateString(undefined, { year: 'numeric', month: 'short' }))
   }
 
+  useEffect(() => {
+    console.log(loan)
+  }, [loan])
+
   return (
     <motion.div
       className="flex flex-col w-88 h-48 rounded-lg bg-purple-300
@@ -157,10 +161,10 @@ export default function LoanInfoCard({ userUSDCBal, loan }: { userUSDCBal: numbe
       onHoverEnd={() => setHovering(false)}
     >
       <div className="text-5xl font-bold -ml-1">
-        {Number(loan.loanAmount).toFixed(2)} USDC
+        {Math.ceil(Number(loan.loanAmount) * 100) / 100} USDC
       </div>
       <div className="text-3xl font-semibold ">{loanName}</div>
-      <div className="text-2xl font-semibold">{Number(loan.totalDue).toFixed(2)}$ due in {getDueDate(new Date(loan.endTime))}</div>
+      <div className="text-2xl font-semibold">{Math.ceil(Number(loan.totalDue) * 100) / 100}$ due in {getDueDate(new Date(loan.endTime))}</div>
       <div className="absolute bottom-5 right-5">
         <PayLoanDialog loan={loan} hovering={hovering} userUSDCBal={userUSDCBal}/>
       </div>
