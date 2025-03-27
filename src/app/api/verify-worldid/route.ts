@@ -11,7 +11,7 @@ export async function POST(request: Request) {
         const action = process.env.NEXT_PUBLIC_WORLD_ID_ACTION_ID || "vhack_action";
         
         try {
-            const verifyRes = await verifyCloudProof(
+            const verifyRes: any = await verifyCloudProof(
                 proof,
                 app_id as `app_${string}`,
                 action

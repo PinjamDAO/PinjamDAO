@@ -1,38 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PinjamDAO
 
-## Getting Started
+This repo contains the Frontend and Backend of PinjamDAO.
 
-First, run the development server:
+# Features
 
-```bash
-npm i
 
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Installation & Setup
+
+1. Clone all 3 repositories
+
+```
+https://github.com/VHack-2025/PinjamDAO
+https://github.com/VHack-2025/PinjamDAO-Smart-Contract
+https://github.com/VHack-2025/PinjamDAO-Flask
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. `cd` into the directory containing `PinjamDAO-Flask`, follow the setup instructions and start the backend.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. `cd` into the directory containing `PinjamDAO-Smart-Contract` and follow the setup instructions until 'Compilation'.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. `cd` out of the directory.
 
-## Learn More
+5. Copy the ABI from `artifacts/contracts/MicroLoan.sol/` into `PinjamDAO/src/services/contracts`
 
-To learn more about Next.js, take a look at the following resources:
+```
+cp ./PinjamDAO-Smart-Contract/artifacts/contracts/MicroLoan.sol/MicroLoan.json ./PinjamDAO/src/services/contracts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+6. `cd` into the directory containing this repo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+7. Create a `.env` with the follwing fields:
 
-## Deploy on Vercel
+```js
+// MongoDB credentials
+MONGODB_URI=
+SESSION_NAME=
+SESSION_PASSWORD=
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+// Circle Wallet Credentials
+CIRCLE_API_KEY=
+CIRCLE_WALLETSET_ID=
+CIRCLE_SECRET=
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+// Deployed Contract Address
+MICROLOAN_ADDRESS=
+WALLET_ADDR=
+PRIVATE_KEY=
+
+// Infura API Key
+INFURA_API_KEY=
+
+// Etherscan API Key
+ETHERSCAN_API_KEY=
+
+// USDC Contract Address
+USDC_CONTRACT_ADDRESS=
+PYTH_PRICE_FEED=
+ETH_PRICE_ID=
+
+```
+
+8. `npm run dev` or `npm run build && npm start` to start.
