@@ -2,6 +2,10 @@
 
 This repo contains the Frontend and Backend of PinjamDAO.
 
+![Main page](/assets/splash.png)
+
+![Dashboard](/assets//dashboard.png)
+
 # Features
 
 

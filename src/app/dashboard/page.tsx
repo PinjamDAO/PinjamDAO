@@ -203,15 +203,11 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       refreshMetrics()
-    }, 30000)
+    }, 60000)
 
     return () => clearInterval(interval)
 
   }, [])
-
-  useEffect(() => {
-    console.log(activeDeposit)
-  }, [activeDeposit])
 
   const refreshMetrics = () => {
     fetch('/api/wallet/eth', {
