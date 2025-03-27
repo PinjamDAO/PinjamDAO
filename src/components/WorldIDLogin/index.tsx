@@ -8,7 +8,7 @@ import { useState } from "react";
 
 export default function WorldIDLogin({ onSuccess }: { onSuccess: (result: ISuccessResult) => void }) {
     const [loading, setLoading] = useState(false);
-    const [verified, setVerified] = useState(false);
+    const [verified] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // App ID and action from environment variables (with fallbacks for development)

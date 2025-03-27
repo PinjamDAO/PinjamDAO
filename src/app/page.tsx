@@ -1,9 +1,7 @@
 'use client'
 
-import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { useEffect, useRef, useState } from "react";
-import { animate } from "motion";
+import { AnimatePresence, motion } from "motion/react"
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import WorldIDLogin from "@/components/WorldIDLogin";
 import { useRouter } from "next/navigation";
@@ -12,12 +10,18 @@ import { ISuccessResult } from "@worldcoin/idkit-core";
 function Slogan() {
   
   const keywords = ['Simple', 'Secure', 'Swift']
-  const duration = 5000
+  const duration = 3000
   const [currKeywordIndex, setCurrKeywordIndex] = useState(0)
 
-  setInterval(() => {
-    setCurrKeywordIndex((currKeywordIndex + 1) % keywords.length);
-  }, duration)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrKeywordIndex((currKeywordIndex + 1) % keywords.length);
+    }, duration)
+
+    return () => clearInterval(interval)
+
+  }, [currKeywordIndex, keywords.length])
+
 
   return (
     <div className="text-black text-[6rem] font-extrabold text-right">

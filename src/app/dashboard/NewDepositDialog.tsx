@@ -36,6 +36,11 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
 
   }
 
+  const reset = () => {
+    setDepositAmount(0)
+    setDepositSuccess(null)
+  }
+
   // helper
 
   const getButtonColour = () => {
@@ -80,7 +85,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
   }
 
   return(
-    <Dialog>
+    <Dialog onOpenChange={reset}>
       <DialogTrigger>
         <motion.div
           className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
@@ -106,7 +111,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
               <div className="">USDC</div>
             </div>
           </div>
-          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
+          <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-2"/>
           <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
             <div className="flex text-black font-bold text-3xl">Deposit Details</div>
             <div className="flex flex-row justify-between items-center">

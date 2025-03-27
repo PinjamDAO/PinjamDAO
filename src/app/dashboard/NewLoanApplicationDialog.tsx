@@ -55,12 +55,12 @@ export default function NewLoanApplicationDialog(
 
   useEffect(() => {
 
-    if (ETHToUSDPrice !== 0) {
+    if (ETHToUSDPrice !== 0 && borrowAmount !== 0) {
       setCollateralAmountETH(borrowAmount / ETHToUSDPrice)
     } else {
       setCollateralAmountETH(0)
     }
-  }, [borrowAmount])
+  }, [borrowAmount, ETHToUSDPrice])
 
   // button triggered
 
@@ -225,7 +225,7 @@ export default function NewLoanApplicationDialog(
                 <div className="flex text-black font-semibold text-2xl pl-2">For the purpose of</div>
                 <Dropdown options={loanPurposes} label={'Purpose'} selected={selectedPurpose} setSelected={setSelectedPurpose}/>
               </div>
-              <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-10"/>
+              <hr className="w-[90%] border-2 border-gray-200 mx-10 rounded-full mt-2 mb-2"/>
               <div className="flex flex-col space-y-3 w-[80%] text-xl pb-5">
                 <div className="flex text-black font-bold text-3xl">Loan Details</div>
                 <div className="flex flex-row justify-between items-center">
@@ -271,7 +271,7 @@ export default function NewLoanApplicationDialog(
                 </DialogHeader>
                 <div className="text-xl w-[80%]">To take the loan, input the destination wallet address and press confirm.</div>
                 <div className="flex flex-col space-y-3">
-                  <div className="flex text-black font-semibold text-2xl pl-2">My wallet's public address is</div>
+                  <div className="flex text-black font-semibold text-2xl pl-2">My wallet&apos;s public address is</div>
                   <input className="bg-white text-black font-medium text-md w-100 h-16 p-5 rounded-lg inset-shadow-sm inset-shadow-indigo-200 focus:outline-0"
                     onChange={(e) => setUserPublicAddress(e.target.value)} />
                 </div>
@@ -294,6 +294,7 @@ export default function NewLoanApplicationDialog(
                 <DialogHeader>
                   <DialogTitle className="font-bold text-4xl text-black pt-5">Loan Denied</DialogTitle>
                 </DialogHeader>
+                <div className="text-xl w-[80%]">Unfortunately, you do not meet the requirements to take out this loan.</div>
               </>
               )
             }
