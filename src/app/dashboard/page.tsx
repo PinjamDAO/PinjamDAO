@@ -16,6 +16,8 @@ import NewLoanApplicationDialog from "./NewLoanApplicationDialog";
 import NewDepositDialog from "./NewDepositDialog";
 import AddFundsDialog from "./AddFundsDialog";
 import { ActiveLoan, LoanHistory } from "@/types/type";
+import { motion } from "motion/react";
+import { toast } from "sonner";
 // import { Progress } from "@/components/ui/progress"
 
 
@@ -67,12 +69,54 @@ function InfoCard({title, subtitle, amount}: {title: string, subtitle: string, a
   )
 }
 
-
 type Deposit = {
   amount: string,
-  createdAt: string,
-  updatedAt: string,
-  userID: string
+  depositTime: string,
+  lockEndTime: string,
+  interestEarned: string
+}
+
+function DepositCard({ deposit }: { deposit: Deposit }) {
+
+  const canWithdraw = Date.now() >= new Date(deposit.lockEndTime).getTime()
+
+  const withdrawDeposit = () => {
+
+    fetch('/api/deposit/withdraw', {
+      method: 'POST'
+    }).then((resp) => {
+      if (resp.ok) {
+        toast(`Deposit of ${deposit.amount} scheduled for withdraw.`)
+      }
+
+    }).catch((e) => console.error(e))
+
+  }
+
+  return (
+    <div className="flex flex-row justify-between items-center h-24 hover:bg-gray-200
+    rounded-lg transition-all select-none">
+      <div className="flex flex-row space-x-5">
+        <div className="flex items-center justify-center">
+          <div className="size-16 bg-[#9747FF] rounded-full"></div>
+        </div>
+        <div className="flex flex-col space-y-2 justify-center">
+          <div className="font-semibold text-2xl">{deposit.amount} USDC</div>
+          <div className="font-base text-xl">{"Earned " + deposit.interestEarned + " USDC of interest"}</div>
+        </div>
+      </div>
+      <motion.button
+          className={`flex items-center justify-center min-w-48 h-12 px-5 rounded-lg text-white
+          font-semibold text-lg cursor-pointer select-none ${canWithdraw ? 'bg-[#5202DB]' : 'bg-[#afa3c4]'}`}
+          disabled={!canWithdraw}
+          whileHover={canWithdraw ? {scale: 1.1} : {}}
+          whileTap={canWithdraw ? {scale: 0.9} : {}}
+          onClick={withdrawDeposit}
+          >
+            {canWithdraw ? 'Withdraw' :`Withdrawable on ${new Date(deposit.lockEndTime).toLocaleDateString()}`}
+        </motion.button>
+    </div>
+  )
 }
 
 
@@ -84,7 +128,7 @@ export default function Dashboard() {
   const [maxLoanableAmount, setMaxLoanableAmount] = useState<number>(0)
   const [userLoanHistory, setUserLoanHistory] = useState<LoanHistory[]>([])
   const [activeLoan, setActiveLoan] = useState<ActiveLoan | null>(null)
-  const [activeDeposits, setActiveDeposits] = useState<Deposit[]>([])
+  const [activeDeposit, setActiveDeposit] = useState<Deposit | null>(null)
 
   useEffect(() => {
 
@@ -145,11 +189,11 @@ export default function Dashboard() {
       }
     })
 
-    fetch('/api/deposit', {
+    fetch('/api/deposit/active', {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
-        resp.json().then((json) => setActiveDeposits(json))
+        resp.json().then((json) => setActiveDeposit(json))
       }
     })
 
@@ -166,8 +210,8 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    console.log(activeDeposits)
-  }, [activeDeposits])
+    console.log(activeDeposit)
+  }, [activeDeposit])
 
   const refreshMetrics = () => {
     fetch('/api/wallet/eth', {
@@ -219,11 +263,11 @@ export default function Dashboard() {
       }
     })
 
-    fetch('/api/deposit', {
+    fetch('/api/deposit/active', {
       method: 'GET'
     }).then((resp) => {
       if (resp.ok) {
-        resp.json().then((json) => setActiveDeposits(json))
+        resp.json().then((json) => setActiveDeposit(json))
       }
     })
 
@@ -278,11 +322,8 @@ export default function Dashboard() {
               </div>
               <div className="space-y-5">
               {
-                activeDeposits?.map((d, i) => <InfoCard 
-                key={i}
-                title="Ongoing Deposit"
-                subtitle={new Date(d.createdAt).toLocaleDateString()}
-                amount={Number(d.amount)}/>)
+                activeDeposit !== null ? <DepositCard deposit={activeDeposit} /> : 
+                  <div className="flex py-5 text-black font-semibold text-2xl items-center justify-center">You have no active deposits.</div>
               }
               </div>
 
