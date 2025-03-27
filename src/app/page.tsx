@@ -15,9 +15,15 @@ function Slogan() {
   const duration = 5000
   const [currKeywordIndex, setCurrKeywordIndex] = useState(0)
 
-  setInterval(() => {
-    setCurrKeywordIndex((currKeywordIndex + 1) % keywords.length);
-  }, duration)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrKeywordIndex((currKeywordIndex + 1) % keywords.length);
+    }, duration)
+
+    return () => clearInterval(interval)
+
+  }, [currKeywordIndex])
+
 
   return (
     <div className="text-black text-[6rem] font-extrabold text-right">

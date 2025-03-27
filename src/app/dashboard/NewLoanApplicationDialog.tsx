@@ -294,6 +294,7 @@ export default function NewLoanApplicationDialog(
                 <DialogHeader>
                   <DialogTitle className="font-bold text-4xl text-black pt-5">Loan Denied</DialogTitle>
                 </DialogHeader>
+                <div className="text-xl w-[80%]">Unfortunately, you do not meet the requirements to take out this loan.</div>
               </>
               )
             }

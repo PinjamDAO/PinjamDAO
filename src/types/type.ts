@@ -5,15 +5,15 @@ export type Frequency = "day" | "month" | "annual"
 export type InterestType = "simple" | "compound"
 
 export type WorldIDResponse = {
-  proof: String,
-  merkle_root: String,
-  nullifier_hash: String,
-  verification_level: String
+  proof: string,
+  merkle_root: string,
+  nullifier_hash: string,
+  verification_level: string
 }
 
 export type SessionData = {
-  id: String
-  log_in: Boolean
+  id: string
+  log_in: boolean
 }
 
 // TODO: this does not belong here

@@ -52,7 +52,7 @@ function LoanInfoCarousel({ userUSDCBal, activeLoan }: { userUSDCBal: number | n
   )
 }
 
-function HistoryCard({title, subtitle, amount}: {title: string, subtitle: string, amount: number}) {
+function InfoCard({title, subtitle, amount}: {title: string, subtitle: string, amount: number}) {
   return (
     <div className="flex flex-row justify-between h-24 px-5 hover:bg-gray-200 rounded-lg transition-all select-none">
       <div className="flex flex-row space-x-5">
@@ -67,14 +67,15 @@ function HistoryCard({title, subtitle, amount}: {title: string, subtitle: string
       <div className="flex flex-col justify-center font-semibold text-2xl">{amount ? amount.toFixed(2) + ' USDC': ''}</div>
     </div>
   )
-
-}
-
-function InvestmentCard() {
-
 }
 
 
+type Deposit = {
+  amount: string,
+  createdAt: string,
+  updatedAt: string,
+  userID: string
+}
 
 
 export default function Dashboard() {
@@ -85,6 +86,7 @@ export default function Dashboard() {
   const [maxLoanableAmount, setMaxLoanableAmount] = useState<number>(0)
   const [userLoanHistory, setUserLoanHistory] = useState<LoanHistory[]>([])
   const [activeLoan, setActiveLoan] = useState<ActiveLoan | null>(null)
+  const [activeDeposits, setActiveDeposits] = useState<Deposit[]>([])
 
   useEffect(() => {
 
@@ -145,6 +147,14 @@ export default function Dashboard() {
       }
     })
 
+    fetch('/api/deposit', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setActiveDeposits(json))
+      }
+    })
+
   }, [])
 
   useEffect(() => {
@@ -156,6 +166,10 @@ export default function Dashboard() {
     return () => clearInterval(interval)
 
   }, [])
+
+  useEffect(() => {
+    console.log(activeDeposits)
+  }, [activeDeposits])
 
   const refreshMetrics = () => {
     fetch('/api/wallet/eth', {
@@ -206,6 +220,15 @@ export default function Dashboard() {
         })
       }
     })
+
+    fetch('/api/deposit', {
+      method: 'GET'
+    }).then((resp) => {
+      if (resp.ok) {
+        resp.json().then((json) => setActiveDeposits(json))
+      }
+    })
+
   }
 
   return (
@@ -241,7 +264,7 @@ export default function Dashboard() {
             <div className="flex flex-col space-y-5 w-[45%]">
               <div className="text-black text-3xl font-bold">History</div>
               {
-                userLoanHistory?.map((h, i) => <HistoryCard 
+                userLoanHistory?.map((h, i) => <InfoCard 
                   key={i}
                   title="Took out a loan"
                   subtitle={new Date(h.startTime).toLocaleDateString()}
@@ -256,7 +279,13 @@ export default function Dashboard() {
                 <NewDepositDialog userUSDCBal={userUSDCBal}/>
               </div>
               <div className="space-y-5">
-                
+              {
+                activeDeposits?.map((d, i) => <InfoCard 
+                key={i}
+                title="Ongoing Deposit"
+                subtitle={new Date(d.createdAt).toLocaleDateString()}
+                amount={Number(d.amount)}/>)
+              }
               </div>
 
               {/* <div className="text-black text-3xl font-bold">Credit Standing</div>
