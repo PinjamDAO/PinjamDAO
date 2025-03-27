@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import Task from "@/models/tasks";
-import { NextApiRequest } from "next";
 import { getCurrentUser } from "@/services/session";
 import { userType } from "@/models/users";
 
-export async function GET(request: NextApiRequest, { params }: { params: { id: string }}) {
+export async function GET(
+    _: Request, 
+    { params }: { params: Promise<{ id: string }>}
+) {
     const user: userType = await getCurrentUser()
 
     if (user === null) {
