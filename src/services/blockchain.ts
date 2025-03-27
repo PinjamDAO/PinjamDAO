@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import dotenv from "dotenv";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { getSessionID } from "./session";
+import { userType } from "@/models/users";
 
 dotenv.config();
 
@@ -381,4 +382,23 @@ export async function amazing(circleAddr: string, circleID: string) {
         console.log(e.response.data.errors)
         return false
     }
+}
+
+export async function getOnGoingDeposit() {
+  const microloan = await connectToMicroloan()
+  const depositData = await microloan.getDepositInfo(await getSessionID())
+
+  return {
+    amount: ethers.formatUnits(depositData.amount, 6),
+    depositTime: new Date(Number(depositData.depositTime) * 1000),
+    lockEndTime: new Date(Number(depositData.lockEndTime) * 1000),
+    interestEarned: ethers.formatUnits(depositData.interestEarned, 6)
+  }
+}
+
+export async function withdrawDeposit(amount: string, user: userType) {
+    const microloan = await connectToMicroloan()
+    const amountInWei = ethers.parseUnits(amount, 6)
+
+    await microloan.withdrawUSDC(amountInWei, user.worldId, user.walletAddress)
 }

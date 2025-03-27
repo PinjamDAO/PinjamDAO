@@ -22,6 +22,7 @@ export enum TaskProgress {
     RefundingCollateral = 'RefundingCollateral',
     Cooldown = 'Cooldown',
     Saving = 'Saving',
+    WithdrawDeposit = 'WithdrawDeposit',
 
     Done = 'Done',
     Failed = 'Failed',
