@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | null, loan: ActiveLoan, hovering: boolean }) {
 
-  const [repayAmount, setRepayAmount] = useState(Number(Number(loan.loanAmount).toFixed(2)))
+  const [repayAmount, setRepayAmount] = useState(Number(loan.loanAmount))
   const [repaySuccess, setRepaySuccess] = useState<boolean | null>(null)
 
   const [maxToRepay] = useState(Number(Number(loan.loanAmount).toFixed(2)))
@@ -22,7 +22,7 @@ function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | 
     }).then((resp) => {
       if (resp.ok) {
         setRepaySuccess(true)
-        toast(`Successfuly scheduled ${repayAmount} USDC for loan repayment.`)
+        toast(`Successfuly scheduled ${repayAmount.toFixed(2)} USDC for loan repayment.`)
       } else if (resp.status === 409) {
         setRepaySuccess(false)
         toast.error('Loan repayment is already in progress, please wait for completion')
@@ -31,7 +31,7 @@ function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | 
   }
 
   const reset = () => {
-    setRepayAmount(Number(Number(loan.loanAmount).toFixed(2)))
+    setRepayAmount(Number(loan.loanAmount))
     setRepaySuccess(null)
   }
 
