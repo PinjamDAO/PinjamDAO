@@ -4,7 +4,7 @@ import { motion } from "motion/react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number | null}) {
+export default function NewDepositDialog({ hasActiveDeposit, userUSDCBal }: { hasActiveDeposit: boolean, userUSDCBal: number | null}) {
 
   const [depositAmount, setDepositAmount] = useState(0)
   const [depositSuccess, setDepositSuccess] = useState<boolean | null>(null)
@@ -88,7 +88,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
     <Dialog onOpenChange={reset}>
       <DialogTrigger>
         <motion.div
-          className="flex items-center justify-center w-48 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
+          className="flex items-center justify-center min-w-42 px-5 h-12 bg-[#5202DB] rounded-lg text-white font-semibold text-lg cursor-pointer select-none"
           whileHover={{
             scale: 1.1
           }}
@@ -96,7 +96,7 @@ export default function NewDepositDialog({ userUSDCBal }: { userUSDCBal: number 
             scale: 0.9
           }}
           >
-            New Fixed Deposit
+            {hasActiveDeposit ? 'Increase Fixed Deposit' : 'New Fixed Deposit'}
         </motion.div>
       </DialogTrigger>
       <DialogContent className="flex flex-col justify-center items-center space-y-2 bg-[#EFF8FC]">

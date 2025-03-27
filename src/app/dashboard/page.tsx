@@ -318,7 +318,7 @@ export default function Dashboard() {
 
               <div className="flex flex-row justify-between">
                 <div className="text-black text-3xl font-bold">Investments</div>
-                <NewDepositDialog userUSDCBal={userUSDCBal}/>
+                <NewDepositDialog hasActiveDeposit={activeDeposit !== null} userUSDCBal={userUSDCBal}/>
               </div>
               <div className="space-y-5">
               {
