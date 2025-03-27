@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | null, loan: ActiveLoan, hovering: boolean }) {
 
-  const [repayAmount, setRepayAmount] = useState(Number(loan.loanAmount))
+  const [repayAmount, setRepayAmount] = useState(Math.ceil(Number(loan.loanAmount) * 100) / 100)
   const [repaySuccess, setRepaySuccess] = useState<boolean | null>(null)
 
   const [maxToRepay] = useState(Math.ceil(Number(loan.loanAmount) * 100) / 100)
@@ -17,7 +17,7 @@ function PayLoanDialog({ userUSDCBal, loan, hovering }: { userUSDCBal: number | 
     fetch('/api/loan/pay', {
       method: 'POST',
       body: JSON.stringify({
-        amount: repayAmount.toFixed(6),
+        amount: (Math.ceil(repayAmount * 1000000) / 1000000).toFixed(6),
       })
     }).then((resp) => {
       if (resp.ok) {

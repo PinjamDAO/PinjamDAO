@@ -6,11 +6,14 @@ This repo contains the Frontend and Backend of PinjamDAO.
 
 ![Dashboard](/assets//dashboard.png)
 
-# Features
+## Features
 
+- Decentralised Authentication using WorldID for Sybil-resistance
+- Decentralised peer to peer loan-deposit pool system via USDC and ETH
+- Efficient and Unbiased machine learning loan approvals
+- User friendly UI/UX
 
-
-# Installation & Setup
+## Installation & Setup
 
 1. Clone all 3 repositories
 
@@ -65,10 +68,20 @@ ETH_PRICE_ID=0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace
 
 // Deployed Contract Address (from PinjamDAO-Smart-Contract)
 MICROLOAN_ADDRESS=
+
+// Backend URL (from PinjamDAO-Flask)
+NEXT_PUBLIC_FLASK_BACKEND_URL=http://localhost:5000
 ```
 
 8. `npm run dev` or `npm run build && npm start` to start.
 
-# Authentication
+## Authentication
 
 Use `simulator.worldcoin.org` on mobile to scan the QR code that pops up on screen when a user tries to log in.
+
+## Future Improvements
+
+- Improve machine learning model to account for user's history of using the platform for more accurate loan approvals
+- Provide users with credit score information based on their activity on the platform
+- Decentralised loan approvals via democratic voting
+- Fluctuating stock market-esque interest rate 
