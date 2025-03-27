@@ -116,7 +116,7 @@ export async function POST(request: Request) {
     if (data.amount !== undefined) {
         if (parseFloat(data.amount) === 0) {
             return NextResponse.json({
-                'msg': 'Cant take 0 USDC loan'
+                'msg': 'Cant deposit 0 eth collateral'
             }, { status: 402 })
         }
 

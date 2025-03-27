@@ -60,9 +60,10 @@ async function createJob(amount: string, user: userType) {
             // need to repay collateral here, send to circle wallet
             await updateTaskState(job, TaskProgress.Cooldown)
             // await sendCollateralToCircle(totalDue, user.walletAddress);
-            if (!await amazing(user.walletAddress, user.walletID)) {
+            if (!(await amazing(user.walletAddress, user.walletID))) {
                 return await updateTaskState(job, TaskProgress.Failed)
             }
+            await updateTaskState(job, TaskProgress.Done)
         }
         await updateTaskState(job, TaskProgress.Done)
     } catch (e) {
