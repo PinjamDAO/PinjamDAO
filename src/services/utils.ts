@@ -3,8 +3,9 @@ export async function extractBody(request: Request): Promise<any> {
     let ret = {}
     try {
         ret = await request.json()
-    } catch (e) {
-        console.log(':(')
+    } catch (e: any) {
+        console.log('Feel free to ignore this')
+        console.log(e)
      }
     return ret
 }

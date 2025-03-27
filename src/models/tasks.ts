@@ -28,6 +28,12 @@ export enum TaskProgress {
     Started = 'Started',
 }
 
+export type taskType = {
+    userId: string,
+    taskType: TaskType
+    progress: TaskProgress
+}
+
 const taskSchema = new mongoose.Schema({
     userId: String,
     taskType: {

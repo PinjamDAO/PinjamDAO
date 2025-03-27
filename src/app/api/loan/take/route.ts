@@ -1,7 +1,6 @@
-import tasks from "@/models/tasks";
 import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks";
 import { userType } from "@/models/users";
-import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, payoutLoan, takeLoan, waitForTransaction } from "@/services/blockchain";
+import { depositCollateral, getActiveLoan, getAvailableUSDC, getCollateralValue, takeLoan, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
 import { checkOngoingTasks } from "@/services/task";
@@ -93,10 +92,10 @@ export async function POST(request: Request) {
         }, { status: 409 })
     }
 
-    let balance = await getEthBalance(user.walletAddress)
-    let balanceFloat = parseFloat(balance)
+    const balance = await getEthBalance(user.walletAddress)
+    const balanceFloat = parseFloat(balance)
 
-    const MIN = 0.000000000000000001
+    // const MIN = 0.000000000000000001
 
     // check eth balance, if 0, ask user to fuck off
     if (balanceFloat <= 0) {

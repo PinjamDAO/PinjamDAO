@@ -1,12 +1,12 @@
 import { LogOutSession } from "@/services/session";
 import { NextResponse } from "next/server";
 import connectDB from "@/services/db";
-import User, { userType } from "@/models/users"
+import User from "@/models/users"
 import { WorldIDResponse } from "@/types/type";
 import { LogInSession, setCurrentUser } from "@/services/session";
 
 // destroy session aka log out
-export async function DELETE(request: Request) {
+export async function DELETE() {
     await LogOutSession()
     return NextResponse.json({ 'msg': 'sign out' })
 }

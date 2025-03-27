@@ -1,13 +1,13 @@
 import Task, { TaskProgress, TaskType, updateTaskState } from "@/models/tasks";
 import { userType } from "@/models/users";
-import { connectToBlockchain, connectToMicroloan, depositUSDC, getLoanDetails, waitForTransaction } from "@/services/blockchain";
+import { connectToMicroloan, depositUSDC, waitForTransaction } from "@/services/blockchain";
 import connectDB from "@/services/db";
 import { getCurrentUser } from "@/services/session";
 import { checkOngoingTasks } from "@/services/task";
 import { extractBody, truncateDecimals } from "@/services/utils";
-import { getEthBalance, getUSDCBalance } from "@/services/wallet";
+import { getUSDCBalance } from "@/services/wallet";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
-import { dataLength, ethers } from "ethers";
+import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 import Deposit from "@/models/deposits"
 
@@ -93,8 +93,8 @@ export async function POST(request: Request) {
 
     // circle wallet -> our own wallet
     // const MIN = 0.000001
-    let balance = await getUSDCBalance(user.walletAddress)
-    let balanceFloat = parseFloat(balance)
+    const balance = await getUSDCBalance(user.walletAddress)
+    const balanceFloat = parseFloat(balance)
 
     // check usdc balance, if 0, ask user to fuck off
     if (balanceFloat <= 0) {
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
     return NextResponse.json({})
 }
 
-export async function GET(request: Request) {
+export async function GET() {
     const microLoan = await connectToMicroloan()
 
     return NextResponse.json({

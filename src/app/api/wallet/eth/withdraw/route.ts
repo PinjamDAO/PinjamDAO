@@ -61,10 +61,10 @@ export async function POST( request: Request ) {
         }, { status: 401 })
         
     
-    let balance = await getEthBalance(user.walletAddress)
-    let balanceFloat = parseFloat(balance)
+    const balance = await getEthBalance(user.walletAddress)
+    const balanceFloat = parseFloat(balance)
 
-    const MIN = 0.000000000000000001
+    // const MIN = 0.000000000000000001
 
     // check eth balance, if 0, ask user to fuck off
     if (balanceFloat <= 0) {

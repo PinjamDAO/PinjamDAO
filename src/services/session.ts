@@ -14,7 +14,7 @@ export async function getCurrentUser() {
     return userData
 }
 
-export async function LogInSession(userID: String | undefined) {
+export async function LogInSession(userID: string | undefined) {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
     if (userID)
         session.id = userID
@@ -27,7 +27,7 @@ export async function LogOutSession() {
     session.destroy()
 }
 
-export async function setCurrentUser(userID: String) {
+export async function setCurrentUser(userID: string) {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
     session.id = userID
     await session.save()

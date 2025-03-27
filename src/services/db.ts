@@ -1,7 +1,7 @@
-const mongoose = require("mongoose")
+import mongoose from "mongoose"
 
 export default async function connectDB () {
-    const mongodb_uri = process.env.MONGODB_URI
+    const mongodb_uri = process.env.MONGODB_URI!
     if (mongodb_uri === null) {
         console.error('go set mongodb uri in .env')
     }

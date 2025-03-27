@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { verifyCloudProof } from "@worldcoin/idkit-core/backend";
-import { VerificationLevel } from "@worldcoin/idkit-core";
 
 export async function POST(request: Request) {
     try {

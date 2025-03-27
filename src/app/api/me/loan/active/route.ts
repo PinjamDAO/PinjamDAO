@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/services/session"
 import { NextResponse } from "next/server"
 
 // get details on your ACTIVE loan
-export async function GET(request: Request) {
+export async function GET() {
     const user = await getCurrentUser()
     if (user === null) {
         return NextResponse.json({

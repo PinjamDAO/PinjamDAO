@@ -1,4 +1,4 @@
-import { ethers, TransactionRequest, Wallet } from "ethers";
+import { ethers } from "ethers";
 import dotenv from "dotenv";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
 import { getSessionID } from "./session";
@@ -80,7 +80,7 @@ export async function payoutLoan(recvAddr: string, toSend: string) {
 
 export async function getActiveLoan() {
     // Get the signer
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
     // const [signer] = await ethers.getSigners();
     
     // Connect to MicroLoan contract
@@ -100,18 +100,18 @@ export async function getCollateralValue(amount: string) {
 }
 
 export async function connectToUSDC() {
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
     return new ethers.Contract(USDC_ADDRESS, IERC20Artifact.abi, signer)
 }
 
 export async function connectToMicroloan() {
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
     return new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);    
 }
 
 export async function depositUSDC(amount: string) {
   // Get the signer
-  const { provider, signer } = await connectToBlockchain()
+  const { signer } = await connectToBlockchain()
 
   // Connect to MicroLoan contract
   const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -173,7 +173,7 @@ export async function getAvailableUSDC() {
 
 export async function takeLoan(receipianAddr: string) {
     // Get the signer
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -215,7 +215,7 @@ export async function takeLoan(receipianAddr: string) {
 
 export async function getLoanHistory() {
     // Get the signer
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
     const ret: any[] = []
 
@@ -243,7 +243,7 @@ export async function getLoanHistory() {
 
 export async function getLoanDetails() {
     // Get the signer
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -265,7 +265,7 @@ export async function getLoanDetails() {
 
 export async function repayLoan(amount: string, recvAddr: string) {
     // Get the signer
-    const { provider, signer } = await connectToBlockchain()
+    const { signer } = await connectToBlockchain()
 
     // Connect to MicroLoan contract
     const microLoan = new ethers.Contract(MICROLOAN_ADDRESS, MicroLoanArtifact.abi, signer);
@@ -371,7 +371,8 @@ export async function amazing(circleAddr: string, circleID: string) {
                 }
             }
         })
-        await waitForTransaction(res.data?.id!)
+        if (res.data)
+            await waitForTransaction(res.data.id!)
 
         console.log("Refreshed bro")
         return true
